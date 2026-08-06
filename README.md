@@ -39,6 +39,9 @@ Square payment processing is the remaining major integration. Signed Stream
 playback stays disabled until the Cloudflare settings and credentials are ready,
 so enabling the security layer cannot unexpectedly break current shows.
 
+Picking this up cold, or handing it to someone else? `docs/HANDOFF.md` covers the
+decisions behind the code and exactly what remains.
+
 ## Local development
 
 PostgreSQL is required for authenticated and administrative routes.

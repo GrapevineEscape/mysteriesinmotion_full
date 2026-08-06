@@ -48,7 +48,7 @@ services:
       - key: R2_SECRET_ACCESS_KEY
         sync: false
       - key: R2_ASSET_BUCKET
-        value: mysteriesinmotion-assets
+        value: online-mystery-images
       - key: PUBLIC_PLAY_DOMAIN
         value: play.inmotionmysteries.com
       - key: ADMIN_EMAIL
