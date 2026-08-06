@@ -80,15 +80,17 @@ async function main() {
   const notes: string[] = [];
 
   try {
-    // Scripts, matched to live shows by title -------------------------------
-    const liveShows = await db.show.findMany({
-      where: { type: { not: "ONLINE" } },
+    // Scripts, matched to shows by title -------------------------------------
+    // Every type is considered, not just live ones: the three titles the troupe
+    // performs and also sells as recordings live on ONLINE records, yet their
+    // scripts and cover art still belong to the performers.
+    const shows = await db.show.findMany({
       select: { id: true, title: true, slug: true, scriptUrl: true, coverImageUrl: true },
       orderBy: { displayOrder: "asc" },
     });
 
     const claimed = new Set<string>();
-    for (const show of liveShows) {
+    for (const show of shows) {
       if (show.scriptUrl) {
         notes.push(`"${show.title}" already has a script reference; left alone.`);
         continue;
@@ -115,7 +117,7 @@ async function main() {
     }
 
     // Cover images, matched by the name Flask saved them under ---------------
-    for (const show of liveShows) {
+    for (const show of shows) {
       if (show.coverImageUrl) continue;
       const expected = uploadFiles.find(
         (name) => name.toLowerCase() === `${show.title.toLowerCase()}_image.png`,
