@@ -52,6 +52,79 @@ export async function sendLoginCode({
   });
 }
 
+type BookingSummary = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferredDate: Date;
+  guestCount: number;
+  message: string | null;
+};
+
+const bookingDate = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "full",
+  timeZone: "UTC",
+});
+
+/** Where new booking enquiries are sent. Falls back to the admin address. */
+function bookingInbox() {
+  const configured =
+    process.env.BOOKING_NOTIFICATION_EMAIL?.trim() ||
+    process.env.ADMIN_EMAIL?.trim();
+  if (!configured) {
+    throw new Error("No booking notification address is configured.");
+  }
+  return configured.split(",").map((address) => address.trim());
+}
+
+export async function sendBookingNotification({
+  booking,
+  showTitle,
+}: {
+  booking: BookingSummary;
+  showTitle: string;
+}) {
+  await sendEmail({
+    to: bookingInbox(),
+    replyTo: booking.email,
+    subject: `Booking request: ${showTitle} for ${booking.name}`,
+    html: `
+      <h2>New booking request</h2>
+      <p><strong>Show:</strong> ${showTitle}</p>
+      <p><strong>Preferred date:</strong> ${bookingDate.format(booking.preferredDate)}</p>
+      <p><strong>Guests:</strong> ${booking.guestCount}</p>
+      <hr />
+      <p><strong>Name:</strong> ${booking.name}</p>
+      <p><strong>Email:</strong> ${booking.email}</p>
+      <p><strong>Phone:</strong> ${booking.phone}</p>
+      ${booking.message ? `<p><strong>Message:</strong><br />${booking.message}</p>` : ""}
+    `,
+  });
+}
+
+export async function sendBookingReceipt({
+  booking,
+  showTitle,
+}: {
+  booking: BookingSummary;
+  showTitle: string;
+}) {
+  await sendEmail({
+    to: booking.email,
+    subject: "We received your Mysteries in Motion booking request",
+    html: `
+      <p>Thank you for your booking request, ${booking.name}.</p>
+      <p>We have your enquiry for <strong>${showTitle}</strong> on
+      <strong>${bookingDate.format(booking.preferredDate)}</strong> for
+      ${booking.guestCount} ${booking.guestCount === 1 ? "guest" : "guests"}.</p>
+      <p>This is not a confirmed booking yet. We will be in touch shortly to
+      confirm availability and talk through the details.</p>
+      <p>— Mysteries in Motion</p>
+    `,
+  });
+}
+
 export async function sendTroupeInvite({
   email,
   signInUrl,
