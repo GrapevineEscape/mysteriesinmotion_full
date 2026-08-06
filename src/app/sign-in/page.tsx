@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { safeReturnPath } from "@/lib/auth";
+import { optionalReturnPath } from "@/lib/auth";
 import { SignInForm } from "@/components/sign-in-form";
 
 export const metadata: Metadata = { title: "Sign In" };
@@ -13,13 +13,14 @@ export default async function SignInPage({
   return (
     <section className="page-shell sign-in-shell">
       <div className="sign-in-card">
-        <p className="eyebrow">Return to your cases</p>
+        <p className="eyebrow">Mysteries in Motion</p>
         <h1>Sign in by email.</h1>
         <p>
           No password to remember. We will send a secure, time-limited code to
-          your inbox.
+          your inbox. The same sign-in works for online mysteries and for the
+          troupe portal.
         </p>
-        <SignInForm nextPath={safeReturnPath(next)} />
+        <SignInForm nextPath={optionalReturnPath(next)} />
       </div>
     </section>
   );

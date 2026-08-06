@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { createSession, safeReturnPath, verifyLoginCode } from "@/lib/auth";
+import {
+  createSession,
+  defaultLandingPath,
+  safeReturnPath,
+  verifyLoginCode,
+} from "@/lib/auth";
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as {
@@ -31,6 +36,9 @@ export async function POST(request: Request) {
   await createSession(user.id);
   return NextResponse.json({
     ok: true,
-    next: safeReturnPath(typeof body?.next === "string" ? body.next : null),
+    next: safeReturnPath(
+      typeof body?.next === "string" ? body.next : null,
+      defaultLandingPath(user.role),
+    ),
   });
 }

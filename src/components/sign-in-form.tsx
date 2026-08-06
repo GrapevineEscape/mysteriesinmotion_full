@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function SignInForm({ nextPath }: { nextPath: string }) {
+export function SignInForm({ nextPath }: { nextPath: string | null }) {
   const router = useRouter();
   const [step, setStep] = useState<"email" | "code">("email");
   const [displayName, setDisplayName] = useState("");

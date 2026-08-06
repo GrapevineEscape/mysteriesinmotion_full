@@ -1,9 +1,10 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "crypto";
+import type { UserRole } from "@prisma/client";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 
-const SESSION_COOKIE = "online_mystery_session";
+const SESSION_COOKIE = "mim_session";
 const SESSION_DAYS = 30;
 const CODE_MINUTES = 10;
 const MAX_CODE_ATTEMPTS = 5;
@@ -18,12 +19,36 @@ function secret() {
   return value;
 }
 
+/**
+ * Set to ".mysteriesinmotion.com" in production so one session covers the
+ * marketing site, the troupe portal, and play.mysteriesinmotion.com. Left
+ * unset locally, where the cookie is scoped to the current host.
+ */
+function sessionCookieDomain() {
+  return process.env.SESSION_COOKIE_DOMAIN?.trim() || undefined;
+}
+
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
-export function safeReturnPath(value: string | null | undefined) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/my-cases";
+/** Where each audience lands when no specific destination was requested. */
+export function defaultLandingPath(role: UserRole) {
+  if (role === "ADMIN") return "/admin";
+  if (role === "PERFORMER") return "/troupe";
+  return "/my-cases";
+}
+
+/** Returns the requested path only if it is a safe same-origin destination. */
+export function optionalReturnPath(value: string | null | undefined) {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : null;
+}
+
+export function safeReturnPath(
+  value: string | null | undefined,
+  fallback = "/my-cases",
+) {
+  return optionalReturnPath(value) ?? fallback;
 }
 
 function hashSessionToken(token: string) {
@@ -118,20 +143,46 @@ export async function verifyLoginCode(
     const isAdministrator =
       normalizeEmail(process.env.ADMIN_EMAIL ?? "") === email;
 
-    return transaction.user.upsert({
+    // An admin-issued invitation grants troupe access on first sign-in. This
+    // replaces the shared registration code the Flask application used.
+    const invite = isAdministrator
+      ? null
+      : await transaction.troupeInvite.findFirst({
+          where: {
+            email,
+            acceptedAt: null,
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+    const grantedRole: UserRole | null = isAdministrator
+      ? "ADMIN"
+      : (invite?.role ?? null);
+
+    const user = await transaction.user.upsert({
       where: { email },
       update: {
         emailVerifiedAt: new Date(),
         ...(displayName ? { displayName } : {}),
-        ...(isAdministrator ? { role: "ADMIN" as const } : {}),
+        ...(grantedRole ? { role: grantedRole } : {}),
       },
       create: {
         email,
         displayName,
         emailVerifiedAt: new Date(),
-        role: isAdministrator ? "ADMIN" : "CUSTOMER",
+        role: grantedRole ?? "CUSTOMER",
       },
     });
+
+    if (invite) {
+      await transaction.troupeInvite.update({
+        where: { id: invite.id },
+        data: { acceptedAt: new Date() },
+      });
+    }
+
+    return user;
   });
 }
 
@@ -149,6 +200,7 @@ export async function createSession(userId: string) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
+    domain: sessionCookieDomain(),
     expires: expiresAt,
   });
 }
@@ -174,13 +226,29 @@ export async function currentUser() {
 
 export async function requireUser(returnPath = "/my-cases") {
   const user = await currentUser();
-  if (!user) redirect(`/sign-in?next=${encodeURIComponent(safeReturnPath(returnPath))}`);
+  if (!user) {
+    redirect(
+      `/sign-in?next=${encodeURIComponent(safeReturnPath(returnPath, returnPath))}`,
+    );
+  }
   return user;
 }
 
 export async function requireAdmin() {
   const user = await requireUser("/admin");
-  if (user.role !== "ADMIN") redirect("/my-cases");
+  if (user.role !== "ADMIN") redirect(defaultLandingPath(user.role));
+  return user;
+}
+
+/**
+ * Troupe members and admins share the performer portal; admins keep access so
+ * they can see exactly what performers see.
+ */
+export async function requireTroupe(returnPath = "/troupe") {
+  const user = await requireUser(returnPath);
+  if (user.role !== "PERFORMER" && user.role !== "ADMIN") {
+    redirect(defaultLandingPath(user.role));
+  }
   return user;
 }
 
@@ -190,5 +258,5 @@ export async function signOut() {
   if (token) {
     await db.session.deleteMany({ where: { tokenHash: hashSessionToken(token) } });
   }
-  cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete({ name: SESSION_COOKIE, path: "/", domain: sessionCookieDomain() });
 }

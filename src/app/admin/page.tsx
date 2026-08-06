@@ -28,6 +28,9 @@ export default async function AdminPage() {
         <Link className="button button-ghost" href="/admin/customers">
           Customer support
         </Link>
+        <Link className="button button-ghost" href="/admin/troupe">
+          Troupe access
+        </Link>
       </div>
       <div className="admin-dashboard-summary">
         <div><strong>{shows.length}</strong><span>Online mysteries</span></div>
