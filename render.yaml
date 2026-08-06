@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: online-mystery
+    runtime: node
+    plan: free
+    region: ohio
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run db:deploy
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.10.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: online-mystery-db
+          property: connectionString
+      - key: APP_URL
+        sync: false
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_SQUARE_APPLICATION_ID
+        sync: false
+      - key: NEXT_PUBLIC_SQUARE_LOCATION_ID
+        sync: false
+      - key: SQUARE_ACCESS_TOKEN
+        sync: false
+      - key: SQUARE_WEBHOOK_SIGNATURE_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_GRADING_MODEL
+        value: gpt-5.6-luna
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_STREAM_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_STREAM_SIGNED_URLS
+        value: "false"
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_DEFAULT_BUCKET
+        value: online-mystery-images
+      - key: PUBLIC_PLAY_DOMAIN
+        value: play.inmotionmysteries.com
+      - key: ADMIN_EMAIL
+        sync: false
+
+databases:
+  - name: online-mystery-db
+    plan: free
+    region: ohio
+    databaseName: online_mystery
+    user: online_mystery

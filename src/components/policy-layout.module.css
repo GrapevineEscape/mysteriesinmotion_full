@@ -1,0 +1,197 @@
+.policy {
+  width: min(920px, calc(100% - 40px));
+  margin-inline: auto;
+  padding-block: 72px 120px;
+}
+
+.header {
+  max-width: 780px;
+  margin-bottom: 48px;
+}
+
+.title {
+  margin-bottom: 18px;
+  font-size: clamp(2.8rem, 6vw, 5.2rem);
+  letter-spacing: -0.045em;
+}
+
+.summary {
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+.effectiveDate {
+  margin: 22px 0 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.reviewNotice {
+  margin: 32px 0 0;
+  padding: 18px 20px;
+  border: 1px solid rgba(168, 45, 45, 0.3);
+  border-left: 4px solid var(--red);
+  background: rgba(168, 45, 45, 0.06);
+  color: var(--red-dark);
+  font-size: 0.92rem;
+}
+
+.contents {
+  margin: 0 0 54px;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.contents strong {
+  display: block;
+  margin-bottom: 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+}
+
+.contents ul {
+  margin: 0;
+  padding-left: 20px;
+  columns: 2;
+  column-gap: 40px;
+}
+
+.contents li {
+  break-inside: avoid;
+  margin-bottom: 5px;
+}
+
+.contents a,
+.section a,
+.related a {
+  color: var(--red-dark);
+  border-bottom: 1px solid rgba(168, 45, 45, 0.35);
+  font-weight: 700;
+}
+
+.section {
+  padding-block: 32px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 30px;
+}
+
+.section h2 {
+  margin-bottom: 16px;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+}
+
+.section h3 {
+  margin: 26px 0 10px;
+  font-size: 1.2rem;
+}
+
+.section p,
+.section li {
+  color: #39454b;
+}
+
+.section ul,
+.section ol {
+  padding-left: 24px;
+}
+
+.section li + li {
+  margin-top: 8px;
+}
+
+.plainList {
+  list-style: none;
+  padding-left: 0 !important;
+}
+
+.plainList li {
+  padding: 14px 0 14px 18px;
+  border-left: 3px solid var(--gold);
+}
+
+.plainList li + li {
+  margin-top: 10px;
+}
+
+.serviceList {
+  display: grid;
+  gap: 14px;
+  padding: 0 !important;
+  list-style: none;
+}
+
+.serviceList li {
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.serviceList strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink);
+}
+
+.policyCallout {
+  margin: 22px 0;
+  padding: 22px 24px;
+  border: 1px solid rgba(198, 155, 84, 0.48);
+  background: rgba(198, 155, 84, 0.1);
+}
+
+.policyCallout strong {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+}
+
+.contactPlaceholder {
+  margin-top: 18px;
+  padding: 20px;
+  border: 2px dashed rgba(168, 45, 45, 0.42);
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.contactPlaceholder strong {
+  display: block;
+  color: var(--red-dark);
+}
+
+.related {
+  margin-top: 48px;
+  padding: 28px;
+  background: var(--ink);
+  color: #f7f1e8;
+}
+
+.related h2 {
+  color: white;
+  font-size: 1.45rem;
+}
+
+.related nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.related a {
+  color: #efd29c;
+  border-color: rgba(239, 210, 156, 0.45);
+}
+
+@media (max-width: 640px) {
+  .policy {
+    width: min(100% - 28px, 920px);
+    padding-block: 52px 84px;
+  }
+
+  .contents ul {
+    columns: 1;
+  }
+}

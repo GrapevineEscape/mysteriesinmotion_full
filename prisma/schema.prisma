@@ -1,0 +1,347 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum ShowStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  REFUNDED
+  DISPUTED
+  COMPLIMENTARY
+}
+
+enum AttemptStatus {
+  NOT_STARTED
+  INVESTIGATING
+  READY_TO_ACCUSE
+  ACCUSATION_SUBMITTED
+  REVEAL_AVAILABLE
+  COMPLETED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  SHORT_TEXT
+}
+
+enum IntermissionMediaType {
+  NONE
+  VIDEO
+  IMAGE
+}
+
+enum TimerExpirationAction {
+  SUBMIT_CURRENT
+  MARK_UNANSWERED_INCORRECT
+}
+
+enum EvidenceUnlockStage {
+  ACT_ONE
+  ACT_TWO
+}
+
+enum AnswerMatchMode {
+  EXACT
+  NORMALIZED
+  AI_ASSISTED
+}
+
+model User {
+  id              String        @id @default(cuid())
+  email           String        @unique
+  emailVerifiedAt DateTime?
+  displayName     String?
+  role            UserRole      @default(CUSTOMER)
+  purchases       Purchase[]
+  attempts        CaseAttempt[]
+  sessions        Session[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+}
+
+model EmailLoginCode {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, expiresAt])
+  @@index([expiresAt])
+}
+
+model Show {
+  id                          String                @id @default(cuid())
+  title                       String
+  slug                        String                @unique
+  shortDescription            String
+  fullDescription             String
+  coverImageUrl               String?
+  introEnabled                Boolean               @default(false)
+  introTitle                  String?
+  introVideoId                String?
+  introSkippable              Boolean               @default(false)
+  introReplayable             Boolean               @default(false)
+  actOneTitle                 String                @default("Act One")
+  actOneVideoId               String?
+  actOneCanPause              Boolean               @default(true)
+  actOneRewindSeconds         Int                   @default(30)
+  lockActOneAfterIntermission Boolean               @default(true)
+  intermissionTitle           String                @default("Make Your Accusation")
+  intermissionMediaType       IntermissionMediaType @default(NONE)
+  intermissionVideoId         String?
+  intermissionImageUrl        String?
+  intermissionVideoLoops      Boolean               @default(true)
+  accusationTimed             Boolean               @default(false)
+  accusationSeconds           Int?
+  timerWarningSeconds         Int?
+  timerExpirationAction       TimerExpirationAction @default(SUBMIT_CURRENT)
+  actTwoTitle                 String                @default("The Reveal")
+  actTwoVideoId               String?
+  actTwoCanPause              Boolean               @default(true)
+  actTwoRewindSeconds         Int                   @default(30)
+  inventoryEnabled            Boolean               @default(false)
+  situationRoomTitle          String                @default("So, how did you do?")
+  resultsMusicEnabled         Boolean               @default(false)
+  resultsMusicUrl             String?
+  vaultTransitionEnabled      Boolean               @default(true)
+  detectiveGaugeEnabled       Boolean               @default(true)
+  priceCents                  Int                   @default(1000)
+  currency                    String                @default("usd")
+  investigationMinutes        Int?
+  revealMinutes               Int?
+  difficulty                  String?
+  ageRecommendation           String?
+  contentAdvisory             String?
+  status                      ShowStatus            @default(DRAFT)
+  displayOrder                Int                   @default(0)
+  suspects                    Suspect[]
+  questions                   Question[]
+  evidenceItems               EvidenceItem[]
+  resultTiers                 ResultTier[]
+  purchases                   Purchase[]
+  attempts                    CaseAttempt[]
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+}
+
+model Suspect {
+  id           String         @id @default(cuid())
+  showId       String
+  show         Show           @relation(fields: [showId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  imageUrl     String?
+  displayOrder Int            @default(0)
+  isSelectable Boolean        @default(true)
+  choices      AnswerChoice[]
+
+  @@unique([showId, name])
+  @@index([showId, displayOrder])
+}
+
+model Question {
+  id                String            @id @default(cuid())
+  showId            String
+  show              Show              @relation(fields: [showId], references: [id], onDelete: Cascade)
+  prompt            String
+  type              QuestionType      @default(SINGLE_CHOICE)
+  pointValue        Int
+  imageUrl          String?
+  matchMode         AnswerMatchMode   @default(EXACT)
+  acceptedAnswers   String[]          @default([])
+  aiGradingRubric   String?
+  resultExplanation String?
+  displayOrder      Int               @default(0)
+  required          Boolean           @default(true)
+  choices           AnswerChoice[]
+  answers           SubmittedAnswer[]
+
+  @@index([showId, displayOrder])
+}
+
+model AnswerChoice {
+  id                String                  @id @default(cuid())
+  questionId        String
+  question          Question                @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  suspectId         String?
+  suspect           Suspect?                @relation(fields: [suspectId], references: [id], onDelete: SetNull)
+  label             String
+  isCorrect         Boolean                 @default(false)
+  displayOrder      Int                     @default(0)
+  legacyAnswers     SubmittedAnswer[]       @relation("LegacySubmittedAnswerChoice")
+  selectedInAnswers SubmittedAnswerChoice[]
+
+  @@index([questionId, displayOrder])
+}
+
+model ResultTier {
+  id             String @id @default(cuid())
+  showId         String
+  show           Show   @relation(fields: [showId], references: [id], onDelete: Cascade)
+  name           String
+  description    String
+  minimumPercent Int
+  maximumPercent Int
+
+  @@index([showId, minimumPercent])
+}
+
+model Purchase {
+  id                      String         @id @default(cuid())
+  userId                  String
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  showId                  String
+  show                    Show           @relation(fields: [showId], references: [id], onDelete: Restrict)
+  status                  PurchaseStatus @default(PENDING)
+  amountCents             Int
+  currency                String         @default("usd")
+  stripeCustomerId        String?
+  stripeCheckoutSessionId String?        @unique
+  stripePaymentIntentId   String?        @unique
+  squareCustomerId        String?
+  squareOrderId           String?        @unique
+  squarePaymentId         String?        @unique
+  squareReceiptUrl        String?
+  purchasedAt             DateTime?
+  startByAt               DateTime?
+  playWindowStartedAt     DateTime?
+  playWindowEndsAt        DateTime?
+  attempts                CaseAttempt[]
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  @@index([showId, status])
+  @@index([userId, showId, status, createdAt])
+}
+
+model CaseAttempt {
+  id                     String            @id @default(cuid())
+  userId                 String
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  showId                 String
+  show                   Show              @relation(fields: [showId], references: [id], onDelete: Restrict)
+  purchaseId             String?
+  purchase               Purchase?         @relation(fields: [purchaseId], references: [id], onDelete: Restrict)
+  status                 AttemptStatus     @default(NOT_STARTED)
+  teamName               String?
+  investigationStartedAt DateTime?
+  accusationSubmittedAt  DateTime?
+  revealStartedAt        DateTime?
+  completedAt            DateTime?
+  score                  Int?
+  resultTierName         String?
+  playbackStage          String            @default("NOT_STARTED")
+  progressRevision       Int               @default(0)
+  furthestIntroSeconds   Int               @default(0)
+  furthestActOneSeconds  Int               @default(0)
+  furthestActTwoSeconds  Int               @default(0)
+  playbackUpdatedAt      DateTime?
+  intermissionStartedAt  DateTime?
+  timerExpiresAt         DateTime?
+  draftAnswers           Json?
+  maximumScore           Int?
+  scorePercent           Int?
+  answers                SubmittedAnswer[]
+  unlockedEvidence       EvidenceUnlock[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([userId, showId, createdAt])
+  @@index([purchaseId, createdAt])
+  @@index([showId, status])
+}
+
+model EvidenceItem {
+  id                  String              @id @default(cuid())
+  showId              String
+  show                Show                @relation(fields: [showId], references: [id], onDelete: Cascade)
+  title               String
+  description         String?
+  fileUrl             String?
+  fileMimeType        String?
+  iconUrl             String?
+  unlockStage         EvidenceUnlockStage @default(ACT_ONE)
+  unlockAtSeconds     Int
+  displayOrder        Int                 @default(0)
+  visibleDuringReveal Boolean             @default(true)
+  unlocks             EvidenceUnlock[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([showId, unlockStage, unlockAtSeconds])
+  @@index([showId, displayOrder])
+}
+
+model EvidenceUnlock {
+  id             String       @id @default(cuid())
+  attemptId      String
+  attempt        CaseAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  evidenceItemId String
+  evidenceItem   EvidenceItem @relation(fields: [evidenceItemId], references: [id], onDelete: Cascade)
+  unlockedAt     DateTime     @default(now())
+
+  @@unique([attemptId, evidenceItemId])
+  @@index([attemptId, unlockedAt])
+}
+
+model SubmittedAnswer {
+  id              String                  @id @default(cuid())
+  attemptId       String
+  attempt         CaseAttempt             @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId      String
+  question        Question                @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  answerChoiceId  String?
+  answerChoice    AnswerChoice?           @relation("LegacySubmittedAnswerChoice", fields: [answerChoiceId], references: [id], onDelete: Restrict)
+  selectedChoices SubmittedAnswerChoice[]
+  writtenAnswer   String?
+  pointsAwarded   Int                     @default(0)
+  isCorrect       Boolean?
+  gradingMethod   String?
+  gradingReason   String?
+  submittedAt     DateTime                @default(now())
+
+  @@unique([attemptId, questionId])
+}
+
+model SubmittedAnswerChoice {
+  answerId String
+  answer   SubmittedAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  choiceId String
+  choice   AnswerChoice    @relation(fields: [choiceId], references: [id], onDelete: Restrict)
+
+  @@id([answerId, choiceId])
+  @@index([choiceId])
+}
