@@ -1,61 +1,33 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { headers } from "next/headers";
+import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { SURFACE_HEADER, surfaceFromHeader } from "@/lib/surface";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Online Mystery",
-    template: "%s | Online Mystery",
+    default: "Mysteries in Motion",
+    template: "%s | Mysteries in Motion",
   },
   description:
-    "Watch the mystery, examine the clues, submit your accusation, and discover your detective rating.",
+    "Live interactive murder mysteries for your event, and original online mysteries you play at home.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const surface = surfaceFromHeader(requestHeaders.get(SURFACE_HEADER));
+
   return (
     <html lang="en">
       <body>
-        <header className="site-header">
-          <Link className="brand" href="/" aria-label="Online Mystery home">
-            <span className="brand-mark" aria-hidden="true">
-              ?
-            </span>
-            <span>Online Mystery</span>
-          </Link>
-          <nav aria-label="Main navigation">
-            <Link href="/mysteries">Mysteries</Link>
-            <Link href="/how-it-works">How It Works</Link>
-            <Link href="/my-cases">My Case Files</Link>
-          </nav>
-          <Link className="button button-small button-ghost" href="/sign-in">
-            Sign In
-          </Link>
-        </header>
+        <SiteHeader surface={surface} />
         <main>{children}</main>
-        <footer className="site-footer">
-          <div>
-            <p className="brand footer-brand">
-              <span className="brand-mark" aria-hidden="true">
-                ?
-              </span>
-              <span>Online Mystery</span>
-            </p>
-            <p>A case to crack. A choice to make. A truth to uncover.</p>
-          </div>
-          <div className="footer-links">
-            <Link href="/how-it-works">How It Works</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/refund-policy">Refunds</Link>
-            <Link href="/support">Support</Link>
-          </div>
-        </footer>
+        <SiteFooter surface={surface} />
       </body>
     </html>
   );
 }
-
