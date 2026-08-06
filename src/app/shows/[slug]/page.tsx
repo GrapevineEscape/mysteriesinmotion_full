@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { LIVE_SHOW_TYPES } from "@/lib/show-types";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ async function findShow(slug: string) {
   return db.show.findFirst({
     where: {
       slug,
-      type: { in: ["STANDARD", "ESCAPE"] },
+      type: { in: LIVE_SHOW_TYPES },
       status: "PUBLISHED",
     },
     include: { roles: { orderBy: { displayOrder: "asc" } } },

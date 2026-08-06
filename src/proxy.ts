@@ -23,6 +23,9 @@ const GATED_MARKETING = [/^\/$/, /^\/about$/, /^\/shows(\/|$)/, /^\/book$/];
 /** Paths that only make sense on the apex. */
 const APEX_ONLY = [/^\/admin(\/|$)/, /^\/troupe(\/|$)/];
 
+/** Signed-in areas that supply their own chrome. */
+const PORTAL = [/^\/troupe(\/|$)/];
+
 function hostnameOf(request: NextRequest) {
   const header = request.headers.get("host") ?? "";
   return header.split(":")[0]!.toLowerCase();
@@ -48,7 +51,11 @@ function withSurface(request: NextRequest, surface: Surface) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = hostnameOf(request);
-  const surface: Surface = isPlayHost(hostname) ? "play" : "site";
+  const surface: Surface = isPlayHost(hostname)
+    ? "play"
+    : matches(PORTAL, pathname)
+      ? "portal"
+      : "site";
   const headers = withSurface(request, surface);
 
   if (surface === "play") {

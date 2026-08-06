@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { SURFACE_HEADER, surfaceFromHeader } from "@/lib/surface";
 import "./globals.css";
+import "@/styles/portal.css";
 
 export const metadata: Metadata = {
   title: {
@@ -20,6 +21,15 @@ export default async function RootLayout({
 }>) {
   const requestHeaders = await headers();
   const surface = surfaceFromHeader(requestHeaders.get(SURFACE_HEADER));
+
+  // The troupe portal supplies its own sidebar shell.
+  if (surface === "portal") {
+    return (
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    );
+  }
 
   return (
     <html lang="en">

@@ -3,18 +3,8 @@
 import { validateBookingInput } from "@/lib/booking-input";
 import { db } from "@/lib/db";
 import { sendBookingNotification, sendBookingReceipt } from "@/lib/email";
-
-export type BookingFormState = {
-  status: "idle" | "success" | "error";
-  message: string;
-  fieldErrors: Record<string, string>;
-};
-
-export const emptyBookingState: BookingFormState = {
-  status: "idle",
-  message: "",
-  fieldErrors: {},
-};
+import { LIVE_SHOW_TYPES } from "@/lib/show-types";
+import type { BookingFormState } from "./booking-state";
 
 export async function requestBooking(
   _previous: BookingFormState,
@@ -30,7 +20,7 @@ export async function requestBooking(
   }
 
   const show = await db.show.findFirst({
-    where: { id: parsed.value.showId, type: { in: ["STANDARD", "ESCAPE"] } },
+    where: { id: parsed.value.showId, type: { in: LIVE_SHOW_TYPES } },
     select: { id: true, title: true },
   });
   if (!show) {

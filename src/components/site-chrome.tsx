@@ -1,9 +1,9 @@
 import Link from "next/link";
-import type { Surface } from "@/lib/surface";
+import type { PublicSurface } from "@/lib/surface";
 
 const BRAND = "Mysteries in Motion";
 
-export function SiteHeader({ surface }: { surface: Surface }) {
+export function SiteHeader({ surface }: { surface: PublicSurface }) {
   return (
     <header className="site-header">
       <Link className="brand" href="/" aria-label={`${BRAND} home`}>
@@ -34,7 +34,7 @@ export function SiteHeader({ surface }: { surface: Surface }) {
   );
 }
 
-export function SiteFooter({ surface }: { surface: Surface }) {
+export function SiteFooter({ surface }: { surface: PublicSurface }) {
   return (
     <footer className="site-footer">
       <div>

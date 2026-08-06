@@ -90,6 +90,19 @@ describe("host routing", () => {
   });
 });
 
+describe("portal chrome", () => {
+  it("marks the troupe portal so it renders its own sidebar", () => {
+    for (const path of ["/troupe", "/troupe/casting/abc"]) {
+      assert.equal(surfaceOf(proxy(request(APEX, path))), "portal", path);
+    }
+  });
+
+  it("leaves the marketing site and the play subdomain on public chrome", () => {
+    assert.equal(surfaceOf(proxy(request(APEX, "/shows"))), "site");
+    assert.equal(surfaceOf(proxy(request(PLAY, "/mysteries"))), "play");
+  });
+});
+
 describe("coming-soon gate", () => {
   it("holds back the marketing pages when enabled", () => {
     process.env.PUBLIC_COMING_SOON = "true";

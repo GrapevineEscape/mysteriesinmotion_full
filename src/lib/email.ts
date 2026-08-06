@@ -5,11 +5,26 @@ type Message = {
   replyTo?: string;
 };
 
+/**
+ * Without a delivery provider there is no way to sign in, since every account
+ * uses an emailed code. Outside production the message is written to the
+ * server log instead so the application is usable from a fresh checkout.
+ */
+function logInsteadOfSending({ to, subject, html }: Message) {
+  console.info(
+    ["", "─".repeat(72), `Email not configured; would have sent:`, `To: ${to}`, `Subject: ${subject}`, html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(), "─".repeat(72), ""].join("\n"),
+  );
+}
+
 export async function sendEmail({ to, subject, html, replyTo }: Message) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
-    throw new Error("Email delivery is not configured.");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Email delivery is not configured.");
+    }
+    logInsteadOfSending({ to, subject, html, replyTo });
+    return;
   }
 
   const response = await fetch("https://api.resend.com/emails", {

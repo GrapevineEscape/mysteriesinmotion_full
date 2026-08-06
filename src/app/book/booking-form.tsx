@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { emptyBookingState, requestBooking } from "./actions";
+import { requestBooking } from "./actions";
+import { emptyBookingState } from "./booking-state";
 
 type ShowOption = { id: string; title: string };
 
@@ -26,7 +27,9 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
       <h2>Request booking information</h2>
 
       {state.status === "error" && (
-        <p role="alert">{state.message}</p>
+        <p className="admin-alert admin-alert-error" role="alert">
+          {state.message}
+        </p>
       )}
 
       <label>

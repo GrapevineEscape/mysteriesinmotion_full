@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { LIVE_SHOW_TYPES } from "@/lib/show-types";
 import { BookingForm } from "./booking-form";
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ const reasons = [
 
 export default async function BookPage() {
   const shows = await db.show.findMany({
-    where: { type: { in: ["STANDARD", "ESCAPE"] }, status: "PUBLISHED" },
+    where: { type: { in: LIVE_SHOW_TYPES }, status: "PUBLISHED" },
     orderBy: { displayOrder: "asc" },
     select: { id: true, title: true, slug: true, shortDescription: true },
   });
