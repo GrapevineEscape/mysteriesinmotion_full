@@ -23,8 +23,14 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
   }
 
   return (
-    <form action={formAction} className="admin-panel">
-      <h2>Request booking information</h2>
+    <form action={formAction} className="booking-form">
+      <div className="booking-form-intro">
+        <h2>Request booking information</h2>
+        <p>
+          Tell us about your event. We will follow up to confirm availability and
+          talk through shows and rates.
+        </p>
+      </div>
 
       {state.status === "error" && (
         <p className="admin-alert admin-alert-error" role="alert">
@@ -32,7 +38,7 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
         </p>
       )}
 
-      <label>
+      <label className="booking-field">
         <span>Your name</span>
         <input maxLength={100} name="name" required />
         {state.fieldErrors.name && (
@@ -40,7 +46,7 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
         )}
       </label>
 
-      <label>
+      <label className="booking-field">
         <span>Email address</span>
         <input autoComplete="email" name="email" required type="email" />
         {state.fieldErrors.email && (
@@ -48,7 +54,7 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
         )}
       </label>
 
-      <label>
+      <label className="booking-field">
         <span>Phone number</span>
         <input
           autoComplete="tel"
@@ -62,7 +68,7 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
         )}
       </label>
 
-      <label>
+      <label className="booking-field">
         <span>Preferred show</span>
         <select defaultValue="" name="showId" required>
           <option disabled value="">
@@ -79,25 +85,27 @@ export function BookingForm({ shows }: { shows: ShowOption[] }) {
         )}
       </label>
 
-      <label>
-        <span>Preferred date</span>
-        <input min={today} name="preferredDate" required type="date" />
-        {state.fieldErrors.preferredDate && (
-          <small role="alert">{state.fieldErrors.preferredDate}</small>
-        )}
-      </label>
+      <div className="booking-field-row">
+        <label className="booking-field">
+          <span>Preferred date</span>
+          <input min={today} name="preferredDate" required type="date" />
+          {state.fieldErrors.preferredDate && (
+            <small role="alert">{state.fieldErrors.preferredDate}</small>
+          )}
+        </label>
 
-      <label>
-        <span>Expected number of guests</span>
-        <input min={1} name="guestCount" required type="number" />
-        {state.fieldErrors.guestCount && (
-          <small role="alert">{state.fieldErrors.guestCount}</small>
-        )}
-      </label>
+        <label className="booking-field">
+          <span>Expected number of guests</span>
+          <input min={1} name="guestCount" required type="number" />
+          {state.fieldErrors.guestCount && (
+            <small role="alert">{state.fieldErrors.guestCount}</small>
+          )}
+        </label>
+      </div>
 
-      <label>
+      <label className="booking-field">
         <span>Additional information</span>
-        <textarea name="message" rows={3} />
+        <textarea name="message" rows={4} />
       </label>
 
       <button className="button button-primary" disabled={pending} type="submit">

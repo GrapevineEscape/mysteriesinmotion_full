@@ -764,6 +764,122 @@ h3 {
   box-shadow: 0 18px 50px rgba(27, 31, 33, 0.05);
 }
 
+/* Public booking form — stacked fields (not the admin panel chrome). */
+.booking-form {
+  margin-top: 40px;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 32px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.booking-form-intro h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.booking-form-intro p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 42ch;
+}
+
+.booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.booking-field > span {
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.booking-field small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.booking-field input,
+.booking-field select,
+.booking-field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 13px;
+  color: var(--ink);
+  border: 1px solid #cfc5b5;
+  border-radius: 4px;
+  outline: none;
+  background: #fffefa;
+  font: inherit;
+}
+
+.booking-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.booking-field input:focus,
+.booking-field select:focus,
+.booking-field textarea:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(168, 45, 45, 0.1);
+}
+
+.booking-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.booking-form > .button {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.mystery-types {
+  display: grid;
+  gap: 28px;
+  margin-top: 28px;
+}
+
+.mystery-type {
+  padding: 8px 0 8px 22px;
+  border-left: 3px solid var(--line);
+}
+
+.mystery-type h3 {
+  margin: 6px 0 12px;
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
+}
+
+.mystery-type p {
+  margin: 0 0 14px;
+  max-width: 62ch;
+  color: var(--muted);
+}
+
+.mystery-type-online {
+  border-left-color: #6b7c8a;
+}
+
+.mystery-type-live {
+  border-left-color: var(--red);
+}
+
+.mystery-type-escape {
+  border-left-color: #8a6b3b;
+}
+
+@media (max-width: 700px) {
+  .booking-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-panel-heading {
   display: flex;
   justify-content: space-between;
