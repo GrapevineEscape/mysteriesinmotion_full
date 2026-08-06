@@ -68,7 +68,8 @@ async function main() {
   }
 
   const staticDir =
-    args.staticDir ?? path.join(process.cwd(), "..", "MIM Website", "app", "static");
+    args.staticDir ??
+    path.join(process.cwd(), "..", "ORIGINAL OLD SITES", "MIM Website", "app", "static");
   const scriptsDir = path.join(staticDir, "MIMscripts");
   const uploadsDir = path.join(staticDir, "uploads");
 

@@ -9,3 +9,6 @@ coverage/
 # Local PGlite development database
 .pglite/
 
+# One-time migration artifacts (online Case Room content pack)
+tmp/
+

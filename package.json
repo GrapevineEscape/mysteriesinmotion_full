@@ -17,6 +17,8 @@
     "db:counts": "node --env-file-if-exists=.env scripts/db-counts.mjs",
     "migrate:flask": "node --env-file-if-exists=.env --import tsx scripts/migrate-flask.ts",
     "migrate:assets": "node --env-file-if-exists=.env --import tsx scripts/upload-flask-assets.ts",
+    "inventory:online": "node --env-file-if-exists=.env --import tsx scripts/inventory-online-content.ts",
+    "migrate:online": "node --env-file-if-exists=.env --import tsx scripts/migrate-online-content.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

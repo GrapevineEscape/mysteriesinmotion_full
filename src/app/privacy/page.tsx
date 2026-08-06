@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           This policy applies to Mysteries in Motion Online, operated by
           Grapevine Escape, including the current site at{" "}
           <strong>online-mystery.onrender.com</strong> and the intended future
-          site at <strong>play.inmotionmysteries.com</strong>.
+          site at <strong>play.mysteriesinmotion.com</strong>.
         </p>
         <p>
           It does not govern a third party&apos;s separate website or service.

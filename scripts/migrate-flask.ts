@@ -50,7 +50,16 @@ async function main() {
   }
 
   const scriptsDir =
-    args.scriptsDir ?? path.join(process.cwd(), "..", "MIM Website", "app", "static", "MIMscripts");
+    args.scriptsDir ??
+    path.join(
+      process.cwd(),
+      "..",
+      "ORIGINAL OLD SITES",
+      "MIM Website",
+      "app",
+      "static",
+      "MIMscripts",
+    );
   let scriptFiles: string[] = [];
   try {
     scriptFiles = (await readdir(scriptsDir)).filter((name) => name.toLowerCase().endsWith(".pdf"));

@@ -45,7 +45,7 @@ export default function TermsPage() {
         <p>
           The Service currently operates at{" "}
           <strong>online-mystery.onrender.com</strong>. The intended future
-          customer address is <strong>play.inmotionmysteries.com</strong>.
+          customer address is <strong>play.mysteriesinmotion.com</strong>.
         </p>
       </section>
 

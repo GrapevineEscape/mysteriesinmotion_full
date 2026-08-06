@@ -92,6 +92,22 @@ failures that type checking cannot see.
 `npm run verify:casting` and `npm run verify:migration` each bring up their own
 throwaway Postgres, so they need no setup and leave nothing behind.
 
+## Migrating Online Mystery Case Room content
+
+The three ONLINE titles' questions, clues, and Stream video UIDs live in the
+legacy Online Mystery Postgres. Export them before cutting over to a new
+database:
+
+```bash
+npm run inventory:online
+npm run migrate:online -- --export --import
+```
+
+`--export` writes `tmp/online-content-pack.json` (gitignored). `--import` loads
+that pack into `DATABASE_URL`. Media stays in Cloudflare; only references move.
+As of the last inventory, only Missing Millions had playable Case Room content
+in production; the other two ONLINE titles were empty drafts.
+
 ## Migrating the Flask troupe database
 
 The live troupe data comes from the earlier Flask application. `npm run

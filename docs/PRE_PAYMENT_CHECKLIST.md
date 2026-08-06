@@ -12,7 +12,7 @@ service around those mysteries.
 - [ ] Review all four owner-review drafts: Terms, Privacy, Refund & Streaming,
       and Customer Support.
 - [ ] Keep `APP_URL=https://online-mystery.onrender.com` until DNS is connected.
-      Later change it to `https://play.inmotionmysteries.com`.
+      Later change it to `https://play.mysteriesinmotion.com`.
 - [ ] Upgrade the production PostgreSQL database to a Render plan with backups
       and confirm a restore can be performed.
 - [ ] Upgrade the web service from the free development plan for launch

@@ -11,11 +11,13 @@ sequence rather than commands.
 
 Two separate applications are being consolidated into one Next.js codebase:
 
-- **A Flask site** (`../MIM Website`, also copied as `../TEMP-MIM`) — the public
-  Mysteries in Motion marketing site plus a hidden troupe portal and admin area
-  where performers read scripts, request roles, and directors schedule shows.
-- **A Next.js app** (`../TEMP-ONLINE`) — the paid online mystery platform where
-  customers buy and watch prerecorded shows and solve the case.
+- **A Flask site** (`../ORIGINAL OLD SITES/MIM Website`, also
+  `../ORIGINAL OLD SITES/TEMP-MIM`) — the public Mysteries in Motion marketing
+  site plus a hidden troupe portal and admin area where performers read scripts,
+  request roles, and directors schedule shows.
+- **A Next.js app** (`../ORIGINAL OLD SITES/TEMP-ONLINE`) — the paid online
+  mystery platform where customers buy and watch prerecorded shows and solve
+  the case.
 
 This repository began as the Next.js app and absorbed the Flask one. Both source
 projects are reference material now. **Do not push to either original GitHub
@@ -34,18 +36,21 @@ brand is Mysteries in Motion and the domain is `mysteriesinmotion.com`.
 
 ## State as of this handoff
 
-Phases 0 through 8 of the migration plan are complete: the unified schema, unified
-authentication, host routing, the ported marketing site, the ported troupe portal,
-the ported business logic, the merged administration area, and the migration of
-live Flask data and files.
+Phases 0 through 8 are complete, plus the Online Mystery Case Room content pack
+path (Phase A of cutover). The unified schema, auth, host routing, marketing,
+troupe portal, admin, Flask migrate/assets, and online content export/import are
+in place.
 
 - 84 tests pass (`npm test`). `npm run typecheck` and `npm run lint` are clean.
-- **16 commits sit on local `main` and have not been pushed.** Pushing them is
-  the first thing to do, and it needs the owner's say-so.
-- The local database holds seed data plus the real migrated Flask data.
+- Local DB holds seed data, Flask troupe data, and the Online Mystery content pack.
+- **Inventory of live Online Mystery Postgres (read-only):** only
+  **Missing Millions** is `PUBLISHED` with Case Room content (5 questions, 2
+  clues, Stream act videos). **Dog Show Debacle** and **Holiday Inheritance**
+  exist as `DRAFT` catalog shells with **no** questions, clues, or video IDs yet.
+  Their MIM roles/scripts still migrate via Flask.
 
-Only Phase 9 (deployment) and Phase 10 (Square payments, deliberately deferred)
-remain.
+Phase 9 (new Render web + new Postgres + cutover) and Phase 10 (Square) remain.
+See `docs/DEPLOY_CUTOVER.md` for the ordered production steps.
 
 ## Decisions that must not be reversed
 
@@ -108,57 +113,25 @@ Full instructions are in `README.md`. Two things will waste your time otherwise:
 
 ## Phase 9: deployment
 
-This is the remaining work. The order matters.
+**Provision a new Render web service and a new Postgres** (`mysteriesinmotion` /
+`mysteriesinmotion-db` in `render.yaml`). Do not point the new app at the old
+Online Mystery database. Leave the old Online Mystery Render stack up as a
+read-only archive until cutover is verified.
 
-### The database decision is already made
+Show completeness comes from two packs, not from adopting the old DB:
 
-**Adopt the existing Online Mystery Postgres on Render.** Do not provision a new
-one. It already holds real online shows and customer purchases, and the unified
-schema was written with `@@map` so it lines up with those existing tables. A new
-database would mean migrating that data too, for no benefit.
+1. **Online content pack** — `npm run migrate:online -- --export` reads
+   `ONLINE_DATABASE_URL` and writes `tmp/online-content-pack.json` (gitignored).
+   `--import` loads it into `DATABASE_URL`. Copies `Show` shells,
+   `OnlineShowDetail` (Stream UIDs), questions, choices, clues, suspects, tiers.
+   Does **not** copy customers or purchases. Media stays in Cloudflare.
+2. **Flask migrate** — `npm run migrate:flask` then `migrate:assets` for roles,
+   scripts, and the rest of the troupe catalog.
 
-`render.yaml` already names it `online-mystery-db`, which is why the service and
-database names still say "online mystery" rather than the new brand. Renaming a
-service in a Render blueprint can replace it, so leave those names alone unless
-the owner wants to take that risk.
+Order on a fresh production DB: `prisma migrate deploy` (Blueprint) →
+`migrate:online -- --import` → `migrate:flask` → `migrate:assets`.
 
-### Steps
-
-1. **Push the 16 local commits** to `github.com/GrapevineEscape/mysteriesinmotion_full`.
-2. **Fix `render.yaml`.** It is stale in specific ways:
-   - `PUBLIC_PLAY_DOMAIN` still says `play.inmotionmysteries.com`. It should be
-     `play.mysteriesinmotion.com`, and should stay empty until that DNS resolves,
-     which keeps the catalog reachable on the apex meanwhile.
-   - These variables exist in `.env.example` but are missing from `render.yaml`
-     entirely, and the app needs them: `PUBLIC_SITE_DOMAIN`,
-     `PUBLIC_COMING_SOON`, `SESSION_COOKIE_DOMAIN`, `APP_TIMEZONE`, and
-     `BOOKING_NOTIFICATION_EMAIL`.
-   - Add `R2_ENDPOINT` only if the bucket turns out to be in a jurisdiction.
-   - Do not put `FLASK_DATABASE_URL` in `render.yaml`; it is a one-time local
-     migration setting.
-3. **Correct the remaining `inmotionmysteries.com` references** in the legal
-   pages and anywhere else they appear.
-4. **Run the migrations against production**: `prisma migrate deploy`, which the
-   blueprint already does as `preDeployCommand`.
-5. **Migrate the Flask data into production.** Everything so far ran against the
-   local database. Point `DATABASE_URL` at production and run `migrate:flask`
-   (dry run first, always) and then `migrate:assets`. Both are idempotent, so a
-   partial run can simply be repeated. The R2 objects are already uploaded, so
-   the asset run will mostly just record references.
-6. **Configure DNS** for the apex and the `play` subdomain, and set
-   `SESSION_COOKIE_DOMAIN` to `.mysteriesinmotion.com` so single sign-on works
-   across them.
-7. **Set `PUBLIC_COMING_SOON=false`** when the owner is ready to be seen. While
-   it is `true`, only the marketing pages are held back; the troupe portal,
-   administration, and sign-in stay reachable, which is what makes it safe to
-   deploy before launch.
-
-### Verifying it
-
-`npm run verify:routes` drives every admin route through a real sign-in by
-reading the emailed code out of the dev server log. It has caught things static
-analysis cannot, such as bad Prisma includes and `"use server"` violations. Run
-it after any change to the admin area.
+Full checklist: `docs/DEPLOY_CUTOVER.md`.
 
 ## Open items
 
@@ -201,9 +174,11 @@ enabling the security layer cannot unexpectedly break working shows.
 | `npm run verify:migration` | Integration-test the Flask migration against ephemeral databases |
 | `npm run verify:routes` | Smoke-test every admin route through a real sign-in |
 | `npm run verify:casting` | Exercise the casting logic |
+| `npm run inventory:online` | Case Room completeness of the three ONLINE shows in Online Mystery Postgres |
+| `npm run migrate:online -- --export --import` | Export/import Case Room content pack (`tmp/online-content-pack.json`) |
 | `npm run migrate:flask -- --dry-run` | Report what a Flask migration would do, changing nothing |
 | `npm run migrate:assets -- --dry-run` | Report which files would move to R2 |
 
-Both migration scripts take `--dry-run`. Use it first, every time. The data
-migration's dry run performs the entire transfer inside a transaction and rolls
-it back, so its report is what would actually happen rather than a prediction.
+Flask migrate supports `--dry-run` (full transaction then rollback). Online migrate
+uses `--export` / `--import` / `--inventory`. Cutover order is in
+`docs/DEPLOY_CUTOVER.md`.
