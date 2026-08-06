@@ -17,8 +17,8 @@ In Render: **New → Blueprint** → connect `mysteriesinmotion_full` → apply
 
 That creates:
 
-- Web service `mim-full` → `https://mim-full.onrender.com`
-- Postgres `mim-full-db`
+- Web service `mim` → `https://mim.onrender.com`
+- Postgres `mim-db`
 
 Fill dashboard secrets (sync: false keys): `APP_URL`, `ADMIN_EMAIL`,
 `EMAIL_FROM`, `RESEND_API_KEY`, Cloudflare R2 keys, optional Stream token and

@@ -113,9 +113,9 @@ Full instructions are in `README.md`. Two things will waste your time otherwise:
 
 ## Phase 9: deployment
 
-**Provision a new Render web service and a new Postgres** (`mim-full` /
-`mim-full-db` in `render.yaml` — named to avoid colliding with the existing
-Flask `mysteriesinmotion` service). Do not point the new app at the old Online
+**Provision a new Render web service and a new Postgres** (`mim` / `mim-db` in
+`render.yaml` — named to avoid colliding with the existing Flask
+`MysteriesInMotion` service). Do not point the new app at the old Online
 Mystery database. Leave the old Online Mystery Render stack up as a read-only
 archive until cutover is verified.
 
