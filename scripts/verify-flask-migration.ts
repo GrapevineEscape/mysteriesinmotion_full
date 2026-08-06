@@ -259,13 +259,14 @@ async function main() {
       assert.deepEqual(
         shows.map((show) => show.slug),
         [
-          // Already present: the online mysteries the migrations seed.
+          // Already present: the online mysteries the migrations seed. Flask's
+          // "Dog Show Debacle" merges into its existing entry rather than
+          // adding a second one.
           "missing-millions",
           "dog-show-debacle",
           "holiday-inheritance",
           // Added from Flask.
           "murder-for-real",
-          "dog-show-debacle-2",
           "the-vanishing",
           "odd-one-out",
         ],
@@ -284,18 +285,33 @@ async function main() {
       });
       assert.ok(online.online, "expected an OnlineShowDetail row");
     });
-    await check("a live show never retypes an existing online mystery", async () => {
+    await check("a title held by a prerecorded mystery stays prerecorded", async () => {
       const shows = await db.show.findMany({ where: { title: "Dog Show Debacle" } });
-      assert.equal(shows.length, 2);
+      assert.equal(shows.length, 1, "expected one entry, not a live duplicate");
+      assert.equal(shows[0].type, "ONLINE");
+    });
+    await check("so it is never offered as a live booking", async () => {
+      const bookable = await db.show.findMany({
+        where: { type: { in: ["STANDARD", "ESCAPE"] } },
+        select: { title: true },
+      });
+      assert.ok(!bookable.some((show) => show.title === "Dog Show Debacle"));
+    });
+    await check("its live details are merged in rather than discarded", async () => {
+      const dogs = await db.show.findFirstOrThrow({
+        where: { title: "Dog Show Debacle" },
+        include: { roles: true },
+      });
+      assert.equal(dogs.kidFriendly, true);
       assert.deepEqual(
-        shows.map((show) => show.type).sort(),
-        ["ONLINE", "STANDARD"],
+        dogs.roles.map((role) => role.name),
+        ["Handler"],
       );
     });
-    await check("the duplicated title is reported for a human to settle", () =>
+    await check("the reclassification is reported", () =>
       assert.ok(
         result.notes.some(
-          (note) => note.includes("Dog Show Debacle") && note.includes("separate catalog entries"),
+          (note) => note.includes("Dog Show Debacle") && note.includes("not offered for live booking"),
         ),
       ),
     );
@@ -303,12 +319,6 @@ async function main() {
       const odd = await db.show.findFirstOrThrow({ where: { title: "Odd One Out" } });
       assert.equal(odd.type, "STANDARD");
       assert.ok(result.notes.some((note) => note.includes("Dinner Theatre")));
-    });
-    await check("the family-friendly flag survives", async () => {
-      const dogs = await db.show.findFirstOrThrow({
-        where: { title: "Dog Show Debacle", type: "STANDARD" },
-      });
-      assert.equal(dogs.kidFriendly, true);
     });
     await check("scripts are matched despite the stored name being wrong", () => {
       const matched = new Map(
@@ -470,7 +480,7 @@ async function main() {
     });
     await check("row totals are unchanged", async () => {
       assert.equal(await db.user.count(), 3);
-      assert.equal(await db.show.count(), 7);
+      assert.equal(await db.show.count(), 6);
       assert.equal(await db.showDate.count(), 3);
       assert.equal(await db.roleApplication.count(), 3);
       assert.equal(await db.rehearsal.count(), 2);

@@ -391,16 +391,14 @@ export async function transfer(
     }
 
     const description = text(row.description) ?? "";
-
-    // A show is matched only against one of its own kind. The same story can
-    // exist twice in the catalog, once as a live production and once as a
-    // prerecorded mystery, and merging those would retype the online show and
-    // orphan its playback configuration.
     const online = type.value === "ONLINE";
-    const existing = await tx.show.findFirst({
-      where: { title, type: online ? "ONLINE" : { not: "ONLINE" } },
-    });
 
+    // One catalog entry per title. Several titles exist in Flask as live scripts
+    // and here as prerecorded mysteries; those are the same offering, so the
+    // Flask record merges into the existing one. The delivery type is never
+    // overwritten, which keeps a prerecorded mystery from being reclassified as
+    // live and offered for booking.
+    const existing = await tx.show.findFirst({ where: { title } });
     if (existing) {
       const updated = await tx.show.update({
         where: { id: existing.id },
@@ -412,14 +410,12 @@ export async function transfer(
       });
       showIds.set(row.id, updated.id);
       count("shows").updated += 1;
+      if (existing.type !== type.value) {
+        notes.push(
+          `"${title}" is already in the catalog as ${existing.type === "ONLINE" ? "a prerecorded mystery" : "a live production"} while Flask calls it ${online ? "an online mystery" : "a live production"}. Its history was merged in and it stays ${existing.type === "ONLINE" ? "prerecorded, so it is not offered for live booking" : "a live production"}.`,
+        );
+      }
       continue;
-    }
-
-    const counterpart = await tx.show.findFirst({ where: { title } });
-    if (counterpart) {
-      notes.push(
-        `"${title}" already exists as ${counterpart.type === "ONLINE" ? "an online mystery" : "a live production"}, and Flask lists it as ${online ? "an online mystery" : "a live production"}. Both were kept as separate catalog entries; merge them by hand if they are the same offering.`,
-      );
     }
 
     const slug = uniqueSlug(slugify(title), takenSlugs);

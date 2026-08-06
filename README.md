@@ -97,8 +97,15 @@ Always dry run first. A dry run performs the whole transfer inside a transaction
 and rolls it back, so its report is what the real run would do rather than a
 prediction, and it will surface a constraint violation before any data moves.
 Read the report's closing section: it lists duplicate addresses, unfamiliar show
-types, records pointing at rows that no longer exist, and titles that exist as
-both a live production and an online mystery.
+types, records pointing at rows that no longer exist, and shows whose delivery
+type differs between the two systems.
+
+The catalog holds one entry per title. Several titles exist in Flask as live
+scripts and here as prerecorded mysteries; those are the same offering, so the
+Flask record merges into the existing entry and its delivery type is left alone.
+A prerecorded mystery therefore keeps its cast and performance history without
+becoming bookable as a live show, since every public and booking surface lists
+only the live types.
 
 Two details are worth knowing:
 
