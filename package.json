@@ -16,6 +16,7 @@
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:counts": "node scripts/db-counts.mjs",
     "migrate:flask": "node --import tsx scripts/migrate-flask.ts",
+    "migrate:assets": "node --import tsx scripts/upload-flask-assets.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

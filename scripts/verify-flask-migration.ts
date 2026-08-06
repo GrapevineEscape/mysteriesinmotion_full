@@ -10,12 +10,15 @@
  * Run with: npm run verify:migration
  */
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { Client } from "pg";
 import { PrismaClient } from "@prisma/client";
 // @ts-expect-error -- plain JS helper, shared with the migration checks.
 import { startEphemeralPostgres } from "./ephemeral-postgres.mjs";
 import { DryRunComplete, readFlask, transfer, type Args } from "./flask-migration";
 
+const run = promisify(execFile);
 const failures: string[] = [];
 
 async function check(label: string, assertion: () => void | Promise<void>) {
@@ -492,6 +495,29 @@ async function main() {
       );
     }
     await check("but the show is not actually there", async () =>
+      assert.equal(await db.show.count({ where: { title: beforeTitle } }), 0),
+    );
+
+    // The command is what will actually be run on the day, so drive it rather
+    // than only the functions underneath it.
+    console.log("\nThe command itself:");
+    const cli = await run("node", ["--import", "tsx", "scripts/migrate-flask.ts", "--dry-run"], {
+      env: {
+        ...process.env,
+        FLASK_DATABASE_URL: sourceDb.url,
+        DATABASE_URL: targetDb.url,
+      },
+      shell: process.platform === "win32",
+    });
+    await check("a dry run reports what it found", () => {
+      assert.match(cli.stdout, /What is in the Flask database/);
+      assert.match(cli.stdout, /What the migration would write/);
+      assert.match(cli.stdout, /nothing was saved/);
+    });
+    await check("and shows how times were read", () =>
+      assert.match(cli.stdout, /America\/Chicago wall clock/),
+    );
+    await check("leaving the database as it was", async () =>
       assert.equal(await db.show.count({ where: { title: beforeTitle } }), 0),
     );
   } finally {
