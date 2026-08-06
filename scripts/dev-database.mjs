@@ -39,11 +39,14 @@ await server.start();
 console.log(`Postgres (PGlite) listening on 127.0.0.1:${PORT}`);
 console.log(`  storage: ${dataDir ?? "in memory"}`);
 console.log(`  max connections: ${MAX_CONNECTIONS}`);
-// Prepared statements stay off: PGlite is one Postgres backend behind every
-// connection, so two clients both naming a statement "s0" would collide.
 console.log(
   `  DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:${PORT}/postgres?pgbouncer=true"`,
 );
+// Every connection shares one Postgres backend here, so a prepared statement
+// outlives the client that made it and the next client collides with it. Use the
+// URL exactly as printed; without pgbouncer=true, queries fail part-way through
+// with 'prepared statement "s0" already exists'.
+console.log(`  (pgbouncer=true is required, not cosmetic)`);
 console.log("Press Ctrl+C to stop.");
 
 async function shutdown() {

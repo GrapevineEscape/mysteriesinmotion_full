@@ -58,6 +58,11 @@ prints the `DATABASE_URL` to use and keeps its data in `.pglite`, so content
 survives a restart. Set `LOCAL_DB_MEMORY=true` for a throwaway database or
 `LOCAL_DB_PORT` to avoid a port already in use.
 
+Copy that URL exactly, including `pgbouncer=true`. Every connection shares a
+single Postgres backend, so a prepared statement outlives the client that created
+it and the next client collides with it. Without that parameter, queries begin
+failing with `prepared statement "s0" already exists`.
+
 Leave it running in its own terminal and start the application in another. Two
 copies must never share `.pglite`: they are independent writers and will corrupt
 each other, so change `LOCAL_DB_PORT` and the data directory together, or stop
