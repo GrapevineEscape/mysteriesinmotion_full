@@ -1,10 +1,10 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "crypto";
 import type { UserRole } from "@prisma/client";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 
-const SESSION_COOKIE = "mim_session";
+export const SESSION_COOKIE = "mim_session";
 const SESSION_DAYS = 30;
 const CODE_MINUTES = 10;
 const MAX_CODE_ATTEMPTS = 5;
@@ -20,12 +20,38 @@ function secret() {
 }
 
 /**
- * Set to ".mysteriesinmotion.com" in production so one session covers the
- * marketing site, the troupe portal, and play.mysteriesinmotion.com. Left
- * unset locally, where the cookie is scoped to the current host.
+ * Set SESSION_COOKIE_DOMAIN to ".mysteriesinmotion.com" only after the custom
+ * domain is live. Until then leave it empty — a Domain attribute for
+ * mysteriesinmotion.com is rejected by the browser on *.onrender.com, which
+ * looks like "sign-in succeeded then dumped me back on the sign-in page".
  */
-function sessionCookieDomain() {
-  return process.env.SESSION_COOKIE_DOMAIN?.trim() || undefined;
+function sessionCookieDomain(hostname: string | null) {
+  const configured = process.env.SESSION_COOKIE_DOMAIN?.trim();
+  if (!configured) return undefined;
+
+  const bare = configured.replace(/^\./, "").toLowerCase();
+  const host = (hostname ?? "").toLowerCase();
+  if (host && (host === bare || host.endsWith(`.${bare}`))) {
+    return configured.startsWith(".") ? configured : `.${bare}`;
+  }
+  return undefined;
+}
+
+async function requestHostname() {
+  const headerStore = await headers();
+  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
+  return host?.split(":")[0] ?? null;
+}
+
+export function sessionCookieOptions(expiresAt: Date, hostname: string | null) {
+  return {
+    httpOnly: true as const,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    domain: sessionCookieDomain(hostname),
+    expires: expiresAt,
+  };
 }
 
 export function normalizeEmail(email: string) {
@@ -211,15 +237,15 @@ export async function createSession(userId: string) {
     data: { userId, tokenHash: hashSessionToken(token), expiresAt },
   });
 
+  const hostname = await requestHostname();
+  const options = sessionCookieOptions(expiresAt, hostname);
+
+  // Also set via next/headers for Server Actions; Route Handlers should copy
+  // these onto the NextResponse they return so Set-Cookie is guaranteed.
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    domain: sessionCookieDomain(),
-    expires: expiresAt,
-  });
+  cookieStore.set(SESSION_COOKIE, token, options);
+
+  return { token, options };
 }
 
 export async function currentUser() {
@@ -275,5 +301,10 @@ export async function signOut() {
   if (token) {
     await db.session.deleteMany({ where: { tokenHash: hashSessionToken(token) } });
   }
-  cookieStore.delete({ name: SESSION_COOKIE, path: "/", domain: sessionCookieDomain() });
+  const hostname = await requestHostname();
+  cookieStore.delete({
+    name: SESSION_COOKIE,
+    path: "/",
+    domain: sessionCookieDomain(hostname),
+  });
 }

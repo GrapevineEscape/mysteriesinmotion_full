@@ -30,7 +30,9 @@ services:
         value: ""
       - key: PUBLIC_COMING_SOON
         value: "true"
-      # Set to .mysteriesinmotion.com after both hostnames point at this service.
+      # Leave empty until mysteriesinmotion.com DNS points here. Setting
+      # .mysteriesinmotion.com while the app is still on *.onrender.com makes
+      # the browser reject the session cookie and sign-in appears to fail.
       - key: SESSION_COOKIE_DOMAIN
         value: ""
       - key: APP_TIMEZONE

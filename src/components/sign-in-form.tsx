@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export function SignInForm({ nextPath }: { nextPath: string | null }) {
-  const router = useRouter();
   const [step, setStep] = useState<"email" | "code">("email");
   const [displayName, setDisplayName] = useState("");
   const [needsName, setNeedsName] = useState(false);
@@ -51,8 +49,9 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
       if (result.needsName) setNeedsName(true);
       return setError(result.error ?? "Unable to verify the code.");
     }
-    router.push(result.next ?? "/my-cases");
-    router.refresh();
+    // Full navigation so the browser definitely applies Set-Cookie before the
+    // next page load (client-side router.push can race the session cookie).
+    window.location.assign(result.next ?? "/my-cases");
   }
 
   return (

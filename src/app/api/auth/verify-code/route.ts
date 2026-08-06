@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {
+  SESSION_COOKIE,
   createSession,
   defaultLandingPath,
   isNewAccount,
@@ -40,12 +41,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "That code is invalid or expired." }, { status: 401 });
   }
 
-  await createSession(user.id);
-  return NextResponse.json({
+  const session = await createSession(user.id);
+  const response = NextResponse.json({
     ok: true,
     next: safeReturnPath(
       typeof body?.next === "string" ? body.next : null,
       defaultLandingPath(user.role),
     ),
   });
+  response.cookies.set(SESSION_COOKIE, session.token, session.options);
+  return response;
 }
