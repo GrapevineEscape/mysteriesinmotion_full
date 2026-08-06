@@ -62,11 +62,27 @@ input {
   font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+  align-items: center;
 }
 
 .site-header nav a:hover,
 .footer-links a:hover {
   color: var(--red);
+}
+
+/* Live vs online: same weight, different accent so both read as first-class. */
+.site-header nav a.nav-live {
+  color: var(--ink);
+}
+
+.site-header nav a.nav-online {
+  color: var(--muted);
+  box-shadow: inset 0 -2px 0 var(--line);
+}
+
+.site-header nav a.nav-online:hover {
+  color: var(--red);
+  box-shadow: inset 0 -2px 0 var(--red);
 }
 
 .site-header > .button {

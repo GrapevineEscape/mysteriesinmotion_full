@@ -13,15 +13,19 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
         <span>{BRAND}</span>
       </Link>
       <nav aria-label="Main navigation">
+        <Link className="nav-live" href="/shows">
+          Live Mysteries
+        </Link>
+        <Link className="nav-online" href="/mysteries">
+          Online Mysteries
+        </Link>
         {surface === "play" ? (
           <>
-            <Link href="/mysteries">Mysteries</Link>
             <Link href="/how-it-works">How It Works</Link>
             <Link href="/my-cases">My Case Files</Link>
           </>
         ) : (
           <>
-            <Link href="/shows">Our Shows</Link>
             <Link href="/about">About</Link>
             <Link href="/book">Book a Show</Link>
           </>
