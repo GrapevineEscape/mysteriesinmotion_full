@@ -53,6 +53,8 @@ async function listFiles(dir: string) {
 
 type Planned = {
   what: string;
+  /** The row to point at the upload. Named rather than matched again on write. */
+  id: string;
   record: string;
   file: string;
   key: string;
@@ -109,6 +111,7 @@ async function main() {
       claimed.add(match.filename);
       planned.push({
         what: "script",
+        id: show.id,
         record: show.title,
         file: path.join(scriptsDir, match.filename),
         key: `scripts/${show.slug}${path.extname(match.filename).toLowerCase()}`,
@@ -125,6 +128,7 @@ async function main() {
       if (!expected) continue;
       planned.push({
         what: "cover image",
+        id: show.id,
         record: show.title,
         file: path.join(uploadsDir, expected),
         key: `shows/${show.slug}/cover.png`,
@@ -172,6 +176,7 @@ async function main() {
           }
           planned.push({
             what: "headshot",
+            id: user.id,
             record: email,
             file: path.join(uploadsDir, filename),
             key: `headshots/${user.id}${path.extname(filename).toLowerCase()}`,
@@ -201,18 +206,18 @@ async function main() {
         const reference = await putR2Object(item.key, body, contentType(item.file));
 
         if (item.what === "script") {
-          await db.show.updateMany({
-            where: { title: item.record, type: { not: "ONLINE" } },
+          await db.show.update({
+            where: { id: item.id },
             data: { scriptUrl: reference },
           });
         } else if (item.what === "cover image") {
-          await db.show.updateMany({
-            where: { title: item.record, type: { not: "ONLINE" } },
+          await db.show.update({
+            where: { id: item.id },
             data: { coverImageUrl: reference },
           });
         } else {
           await db.user.update({
-            where: { email: item.record },
+            where: { id: item.id },
             data: { headshotUrl: reference },
           });
         }
