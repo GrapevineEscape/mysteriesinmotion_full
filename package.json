@@ -11,15 +11,17 @@
     "start": "prisma migrate deploy && next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "test": "node --import tsx --test \"src/**/*.test.ts\" \"scripts/**/*.test.ts\"",
     "db:local": "node scripts/dev-database.mjs",
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:counts": "node scripts/db-counts.mjs",
+    "migrate:flask": "node --import tsx scripts/migrate-flask.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "verify:migrations": "node scripts/verify-migrations.mjs",
     "verify:casting": "node --import tsx scripts/verify-casting.ts",
+    "verify:migration": "node --import tsx scripts/verify-flask-migration.ts",
     "verify:routes": "node scripts/smoke-admin.mjs"
   },
   "dependencies": {
@@ -40,10 +42,12 @@
     "@electric-sql/pglite": "^0.5.4",
     "@electric-sql/pglite-socket": "^0.2.7",
     "@types/node": "^24.10.0",
+    "@types/pg": "^8.20.4",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "eslint": "^9.39.0",
     "eslint-config-next": "16.2.12",
+    "pg": "^8.22.0",
     "tsx": "^4.23.9",
     "typescript": "^6.0.0"
   }

@@ -81,6 +81,38 @@ npm run build
 and administration page against a running dev server, which catches server-only
 failures that type checking cannot see.
 
+`npm run verify:casting` and `npm run verify:migration` each bring up their own
+throwaway Postgres, so they need no setup and leave nothing behind.
+
+## Migrating the Flask troupe database
+
+The live troupe data comes from the earlier Flask application. `npm run
+migrate:flask` reads it directly and writes the unified schema.
+
+```bash
+FLASK_DATABASE_URL=postgres://... npm run migrate:flask -- --dry-run
+```
+
+Always dry run first. A dry run performs the whole transfer inside a transaction
+and rolls it back, so its report is what the real run would do rather than a
+prediction, and it will surface a constraint violation before any data moves.
+Read the report's closing section: it lists duplicate addresses, unfamiliar show
+types, records pointing at rows that no longer exist, and titles that exist as
+both a live production and an online mystery.
+
+Two details are worth knowing:
+
+- Flask stored times without a zone. Times an administrator typed are read as
+  wall clock in `APP_TIMEZONE`, while timestamps Postgres generated are read as
+  UTC. Getting this wrong moves every performance by several hours, so the
+  report prints a few conversions for you to eyeball.
+- Everyone arrives as a passwordless account. Flask password hashes are
+  deliberately left behind, and performers sign in with an email code.
+
+The run is idempotent. Rows are matched on natural keys, so an interrupted run
+can simply be repeated. Scripts and headshots are reported but not uploaded;
+they move separately, since the database only holds a reference to them.
+
 ## Render deployment
 
 Create a new Render Blueprint from this repository. `render.yaml` defines:
