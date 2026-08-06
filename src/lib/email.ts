@@ -82,7 +82,7 @@ const bookingDate = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-/** Where new booking enquiries are sent. Falls back to the admin address. */
+/** Where new booking inquiries are sent. Falls back to the admin address. */
 function bookingInbox() {
   const configured =
     process.env.BOOKING_NOTIFICATION_EMAIL?.trim() ||
@@ -130,7 +130,7 @@ export async function sendBookingReceipt({
     subject: "We received your Mysteries in Motion booking request",
     html: `
       <p>Thank you for your booking request, ${booking.name}.</p>
-      <p>We have your enquiry for <strong>${showTitle}</strong> on
+      <p>We have your inquiry for <strong>${showTitle}</strong> on
       <strong>${bookingDate.format(booking.preferredDate)}</strong> for
       ${booking.guestCount} ${booking.guestCount === 1 ? "guest" : "guests"}.</p>
       <p>This is not a confirmed booking yet. We will be in touch shortly to

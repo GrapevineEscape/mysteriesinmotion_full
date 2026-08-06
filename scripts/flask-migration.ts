@@ -12,6 +12,7 @@
 import { Client, type QueryResultRow, types } from "pg";
 import { type Prisma } from "@prisma/client";
 import { zonedInstant, appTimeZone } from "@/lib/app-time";
+import { htmlToPlainText } from "@/lib/plain-text";
 import { slugify, uniqueSlug } from "@/lib/slug";
 import { matchScript, type ScriptMatch } from "./flask-script-match";
 
@@ -195,6 +196,12 @@ function dateOnly(value: string | null) {
 function text(value: string | null | undefined) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+/** Flask show copy was often stored with markup; the public site renders text. */
+function plain(value: string | null | undefined) {
+  const trimmed = text(value);
+  return trimmed ? htmlToPlainText(trimmed) : null;
 }
 
 function mapped<T extends string>(
@@ -390,7 +397,7 @@ export async function transfer(
       notes.push(`No script file found on disk for "${title}" (database says ${row.script_path}).`);
     }
 
-    const description = text(row.description) ?? "";
+    const description = plain(row.description) ?? "";
     const online = type.value === "ONLINE";
 
     // One catalog entry per title. Several titles exist in Flask as live scripts
@@ -404,8 +411,13 @@ export async function transfer(
         where: { id: existing.id },
         data: {
           kidFriendly: row.kid_friendly ?? false,
-          fullDescription: existing.fullDescription || description,
-          shortDescription: existing.shortDescription || description,
+          // Prefer scrubbed Flask copy when the existing text still has tags.
+          fullDescription: /<[^>]+>/.test(existing.fullDescription)
+            ? description || existing.fullDescription
+            : existing.fullDescription || description,
+          shortDescription: /<[^>]+>/.test(existing.shortDescription)
+            ? description || existing.shortDescription
+            : existing.shortDescription || description,
         },
       });
       showIds.set(row.id, updated.id);
@@ -457,7 +469,7 @@ export async function transfer(
     const fields = {
       gender: text(row.gender) ?? "Any",
       age: text(row.age) ?? "Any",
-      description: text(row.description) ?? "",
+      description: plain(row.description) ?? "",
       displayOrder: order,
     };
     if (existing) {

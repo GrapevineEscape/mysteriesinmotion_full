@@ -38,7 +38,7 @@ export default async function CatalogPage({
 
         {error === "bookings-exist" && (
           <div className="admin-alert admin-alert-error" role="alert">
-            That show has booking enquiries attached, so it cannot be deleted.
+            That show has booking inquiries attached, so it cannot be deleted.
             Archive it instead to take it off the website.
           </div>
         )}
@@ -53,7 +53,7 @@ export default async function CatalogPage({
                   <th>Status</th>
                   <th>Roles</th>
                   <th>Performances</th>
-                  <th>Enquiries</th>
+                  <th>Inquiries</th>
                   <th />
                 </tr>
               </thead>

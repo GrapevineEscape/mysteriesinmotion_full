@@ -19,6 +19,7 @@
     "migrate:assets": "node --env-file-if-exists=.env --import tsx scripts/upload-flask-assets.ts",
     "inventory:online": "node --env-file-if-exists=.env --import tsx scripts/inventory-online-content.ts",
     "migrate:online": "node --env-file-if-exists=.env --import tsx scripts/migrate-online-content.ts",
+    "scrub:html": "node --env-file-if-exists=.env --import tsx scripts/scrub-html-copy.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",

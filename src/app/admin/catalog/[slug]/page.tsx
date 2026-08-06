@@ -105,7 +105,7 @@ export default async function EditShowPage({
           {show._count.bookings > 0 ? (
             <p className="page-intro">
               This show has {show._count.bookings} booking{" "}
-              {show._count.bookings === 1 ? "enquiry" : "enquiries"} on record, so
+              {show._count.bookings === 1 ? "inquiry" : "inquiries"} on record, so
               it cannot be deleted. Set its status to Archived to take it off the
               website while keeping the history.
             </p>

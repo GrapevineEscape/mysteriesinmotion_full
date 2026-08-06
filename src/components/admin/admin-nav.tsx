@@ -22,7 +22,7 @@ const SECTIONS: Array<{ heading: string; links: NavLink[] }> = [
       { href: "/admin/show-dates", label: "Show dates" },
       { href: "/admin/casting", label: "Casting boards" },
       { href: "/admin/applications", label: "Roster requests" },
-      { href: "/admin/bookings", label: "Booking enquiries" },
+      { href: "/admin/bookings", label: "Booking inquiries" },
       { href: "/admin/performers", label: "Performers" },
     ],
   },

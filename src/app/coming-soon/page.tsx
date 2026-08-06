@@ -17,7 +17,7 @@ export default function ComingSoonPage() {
         corporate events.
       </p>
       <p>
-        To enquire about a performance, email{" "}
+        To inquire about a performance, email{" "}
         <a href="mailto:info@mysteriesinmotion.com">
           info@mysteriesinmotion.com
         </a>

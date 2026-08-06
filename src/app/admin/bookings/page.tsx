@@ -7,7 +7,7 @@ import { formatDate } from "@/lib/app-time";
 import { formatUsPhone } from "@/lib/phone";
 import { confirmBooking, setBookingStatus } from "./actions";
 
-export const metadata: Metadata = { title: "Booking enquiries" };
+export const metadata: Metadata = { title: "Booking inquiries" };
 
 const STATUS_FILTERS: { value: BookingStatus | "ALL"; label: string }[] = [
   { value: "PENDING", label: "To answer" },
@@ -44,11 +44,11 @@ export default async function BookingsPage({
   return (
     <>
       <header className="portal-topbar">
-        <h1>Booking enquiries</h1>
+        <h1>Booking inquiries</h1>
       </header>
       <div className="portal-content">
         <p className="page-intro">
-          Enquiries from the website. Confirming one opens a draft performance with
+          Inquiries from the website. Confirming one opens a draft performance with
           the customer&rsquo;s date and party size already filled in, ready for you
           to set the venue and cast it.
         </p>
@@ -173,8 +173,8 @@ export default async function BookingsPage({
             <strong>Nothing here</strong>
             <p>
               {active === "PENDING"
-                ? "Every enquiry has been answered."
-                : "No enquiries match this filter."}
+                ? "Every inquiry has been answered."
+                : "No inquiries match this filter."}
             </p>
           </div>
         )}

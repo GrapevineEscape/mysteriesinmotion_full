@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
     },
     pendingBookings > 0 && {
       href: "/admin/bookings",
-      label: `${pendingBookings} booking ${pendingBookings === 1 ? "enquiry" : "enquiries"} to answer`,
+      label: `${pendingBookings} booking ${pendingBookings === 1 ? "inquiry" : "inquiries"} to answer`,
     },
     draftDates > 0 && {
       href: "/admin/show-dates",
@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
             href="/admin/bookings"
           >
             <span className="portal-stat-value">{pendingBookings}</span>
-            <span className="portal-stat-label">Booking enquiries</span>
+            <span className="portal-stat-label">Booking inquiries</span>
           </Link>
         </div>
 
