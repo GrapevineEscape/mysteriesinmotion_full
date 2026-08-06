@@ -22,8 +22,12 @@ export default async function MysteryDetailPage({
     searchParams,
     currentUser(),
   ]);
-  const show = await db.show.findUnique({ where: { slug } });
-  if (!show) notFound();
+  const show = await db.show.findUnique({
+    where: { slug },
+    include: { online: true },
+  });
+  // The streaming catalog only lists online productions.
+  if (!show?.online) notFound();
 
   const [purchases, activeAttempt] = user
     ? await Promise.all([
@@ -72,7 +76,9 @@ export default async function MysteryDetailPage({
       <p className="eyebrow">Original online mystery</p>
       <h1>{show.title}</h1>
       <p className="page-intro">{show.fullDescription}</p>
-      <p className="card-kicker">${(show.priceCents / 100).toFixed(2)} per show</p>
+      <p className="card-kicker">
+        ${(show.online.priceCents / 100).toFixed(2)} per show
+      </p>
       {access === "required" && (
         <p role="alert">This mystery must be purchased before it can be played.</p>
       )}

@@ -16,6 +16,7 @@ export type ShowReadiness = {
 };
 
 export const showReadinessInclude = {
+  online: true,
   questions: {
     orderBy: { displayOrder: "asc" },
     include: { choices: { orderBy: { displayOrder: "asc" } } },
@@ -59,26 +60,41 @@ function item(
 export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
   const items: ReadinessItem[] = [];
 
+  const online = show.online;
+  if (!online) {
+    const blocker = item(
+      "Online configuration",
+      "BLOCKED",
+      "This show has no online playback configuration, so it cannot be published to the streaming catalog.",
+    );
+    return {
+      items: [blocker],
+      blockers: [blocker],
+      checks: [],
+      readyToPublish: false,
+    };
+  }
+
   items.push(
-    show.priceCents === 1000 && show.currency.toLowerCase() === "usd"
+    online.priceCents === 1000 && online.currency.toLowerCase() === "usd"
       ? item("Price", "READY", "$10.00 USD is configured.")
       : item("Price", "BLOCKED", "Every online mystery must be $10.00 USD."),
   );
 
   items.push(
-    show.actOneVideoId
+    online.actOneVideoId
       ? item("Act One video", "READY", "A required Act One video is configured.")
       : item("Act One video", "BLOCKED", "Add the required Act One video."),
   );
   items.push(
-    show.actTwoVideoId
+    online.actTwoVideoId
       ? item("Act Two video", "READY", "A required Act Two video is configured.")
       : item("Act Two video", "BLOCKED", "Add the required Act Two/reveal video."),
   );
 
-  if (show.introEnabled) {
+  if (online.introEnabled) {
     items.push(
-      show.introVideoId
+      online.introVideoId
         ? item("Introduction", "READY", "The enabled introduction has a video.")
         : item(
             "Introduction",
@@ -91,26 +107,26 @@ export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
   }
 
   const intermissionErrors: string[] = [];
-  if (!show.intermissionTitle.trim()) {
+  if (!online.intermissionTitle.trim()) {
     intermissionErrors.push("add a displayed title");
   }
-  if (show.intermissionMediaType === "VIDEO" && !show.intermissionVideoId) {
+  if (online.intermissionMediaType === "VIDEO" && !online.intermissionVideoId) {
     intermissionErrors.push("add the selected intermission video");
   }
   if (
-    show.intermissionMediaType === "IMAGE" &&
-    !isStoredFileReference(show.intermissionImageUrl)
+    online.intermissionMediaType === "IMAGE" &&
+    !isStoredFileReference(online.intermissionImageUrl)
   ) {
     intermissionErrors.push("add a valid intermission image URL");
   }
-  if (show.accusationTimed) {
-    if (!show.accusationSeconds || show.accusationSeconds < 1) {
+  if (online.accusationTimed) {
+    if (!online.accusationSeconds || online.accusationSeconds < 1) {
       intermissionErrors.push("add a positive accusation time limit");
     }
     if (
-      show.timerWarningSeconds &&
-      show.accusationSeconds &&
-      show.timerWarningSeconds >= show.accusationSeconds
+      online.timerWarningSeconds &&
+      online.accusationSeconds &&
+      online.timerWarningSeconds >= online.accusationSeconds
     ) {
       intermissionErrors.push("set the warning earlier than timer expiration");
     }
@@ -125,7 +141,7 @@ export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
       : item(
           "Intermission",
           "READY",
-          show.accusationTimed
+          online.accusationTimed
             ? "Required decision stage and countdown settings are valid."
             : "Required untimed decision stage is configured.",
         ),
@@ -187,7 +203,7 @@ export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
 
   if (!show.evidenceItems.length) {
     items.push(
-      show.inventoryEnabled
+      online.inventoryEnabled
         ? item(
             "Case Inventory",
             "BLOCKED",
@@ -209,7 +225,7 @@ export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
         clueErrors.push(`${name} has an invalid unlock time`);
       }
     }
-    if (!show.inventoryEnabled) {
+    if (!online.inventoryEnabled) {
       clueErrors.push("enable Case Inventory because clues are configured");
     }
     items.push(
@@ -232,9 +248,9 @@ export function evaluateShowReadiness(show: ReadinessShow): ShowReadiness {
     );
   }
 
-  if (show.resultsMusicEnabled) {
+  if (online.resultsMusicEnabled) {
     items.push(
-      isStoredFileReference(show.resultsMusicUrl)
+      isStoredFileReference(online.resultsMusicUrl)
         ? item(
             "Situation Room music",
             "READY",

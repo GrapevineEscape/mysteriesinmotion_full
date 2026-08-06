@@ -43,8 +43,10 @@ export default async function AdminPage() {
               <p className={`admin-status ${show.status.toLowerCase()}`}>{show.status}</p>
               <h2>{show.title}</h2>
               <p>
-                ${(show.priceCents / 100).toFixed(2)} ·{" "}
-                {show.inventoryEnabled ? "Inventory enabled" : "No inventory"}
+                ${((show.online?.priceCents ?? 0) / 100).toFixed(2)} ·{" "}
+                {show.online?.inventoryEnabled
+                  ? "Inventory enabled"
+                  : "No inventory"}
               </p>
               <p
                 className={`readiness-card-status ${

@@ -18,6 +18,7 @@ export default async function PlayCasePage({
 }) {
   const { slug } = await params;
   const { attempt, show, user } = await requireCaseAccess(slug);
+  const online = show.online;
   const situationResult = attempt.accusationSubmittedAt
     ? await getSubmittedSituationResult(attempt.id)
     : null;
@@ -30,12 +31,12 @@ export default async function PlayCasePage({
     resultsMusicUrl,
     evidence,
   ] = await Promise.all([
-    secureStreamReference(show.introVideoId),
-    secureStreamReference(show.actOneVideoId),
-    secureStreamReference(show.intermissionVideoId),
-    secureStreamReference(show.actTwoVideoId),
-    secureR2Reference(show.intermissionImageUrl),
-    secureR2Reference(show.resultsMusicUrl),
+    secureStreamReference(online.introVideoId),
+    secureStreamReference(online.actOneVideoId),
+    secureStreamReference(online.intermissionVideoId),
+    secureStreamReference(online.actTwoVideoId),
+    secureR2Reference(online.intermissionImageUrl),
+    secureR2Reference(online.resultsMusicUrl),
     Promise.all(
       show.evidenceItems.map(async (clue) => ({
         id: clue.id,
@@ -59,23 +60,23 @@ export default async function PlayCasePage({
     attemptId: attempt.id,
     slug: show.slug,
     title: show.title,
-    introEnabled: show.introEnabled,
-    introTitle: show.introTitle,
+    introEnabled: online.introEnabled,
+    introTitle: online.introTitle,
     introVideoId,
-    actOneTitle: show.actOneTitle,
+    actOneTitle: online.actOneTitle,
     actOneVideoId,
-    accusationTimed: show.accusationTimed,
-    accusationSeconds: show.accusationSeconds,
-    timerWarningSeconds: show.timerWarningSeconds,
-    timerExpirationAction: show.timerExpirationAction,
-    intermissionTitle: show.intermissionTitle,
-    intermissionMediaType: show.intermissionMediaType,
+    accusationTimed: online.accusationTimed,
+    accusationSeconds: online.accusationSeconds,
+    timerWarningSeconds: online.timerWarningSeconds,
+    timerExpirationAction: online.timerExpirationAction,
+    intermissionTitle: online.intermissionTitle,
+    intermissionMediaType: online.intermissionMediaType,
     intermissionVideoId,
     intermissionImageUrl,
-    intermissionVideoLoops: show.intermissionVideoLoops,
-    actTwoTitle: show.actTwoTitle,
+    intermissionVideoLoops: online.intermissionVideoLoops,
+    actTwoTitle: online.actTwoTitle,
     actTwoVideoId,
-    inventoryEnabled: show.inventoryEnabled,
+    inventoryEnabled: online.inventoryEnabled,
     progress: {
       draftAnswers,
       furthestActOneSeconds: attempt.furthestActOneSeconds,
@@ -90,12 +91,12 @@ export default async function PlayCasePage({
         (unlock) => unlock.evidenceItemId,
       ),
     },
-    situationRoomTitle: show.situationRoomTitle,
+    situationRoomTitle: online.situationRoomTitle,
     situationResult,
-    resultsMusicEnabled: show.resultsMusicEnabled,
+    resultsMusicEnabled: online.resultsMusicEnabled,
     resultsMusicUrl,
-    vaultTransitionEnabled: show.vaultTransitionEnabled,
-    detectiveGaugeEnabled: show.detectiveGaugeEnabled,
+    vaultTransitionEnabled: online.vaultTransitionEnabled,
+    detectiveGaugeEnabled: online.detectiveGaugeEnabled,
     evidence,
     questions: show.questions.map((question) => ({
       id: question.id,

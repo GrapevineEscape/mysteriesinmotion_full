@@ -12,6 +12,7 @@ export async function requireCaseAccess(slug: string) {
   const show = await db.show.findUnique({
     where: { slug },
     include: {
+      online: true,
       evidenceItems: { orderBy: { displayOrder: "asc" } },
       questions: {
         orderBy: { displayOrder: "asc" },
@@ -21,6 +22,12 @@ export async function requireCaseAccess(slug: string) {
     },
   });
   if (!show) notFound();
+
+  // Only online productions have a Case Room to enter. Rebuilding the object
+  // carries the non-null narrowing through to callers.
+  const { online, ...showBase } = show;
+  if (!online) notFound();
+  const onlineShow = { ...showBase, online };
 
   const activeAttempt = await db.caseAttempt.findFirst({
     where: {
@@ -45,7 +52,7 @@ export async function requireCaseAccess(slug: string) {
           unlockedEvidence: { select: { evidenceItemId: true } },
         },
       }));
-    return { attempt, entitlement: null, show, user };
+    return { attempt, entitlement: null, show: onlineShow, user };
   }
 
   // A game that genuinely began before expiration remains available until that
@@ -54,7 +61,7 @@ export async function requireCaseAccess(slug: string) {
     return {
       attempt: activeAttempt,
       entitlement: activeAttempt.purchase,
-      show,
+      show: onlineShow,
       user,
     };
   }
@@ -71,7 +78,7 @@ export async function requireCaseAccess(slug: string) {
   }
 
   if (activeAttempt?.purchaseId === entitlement.id) {
-    return { attempt: activeAttempt, entitlement, show, user };
+    return { attempt: activeAttempt, entitlement, show: onlineShow, user };
   }
 
   // A stale briefing that never streamed is not a started game. Remove it so a
@@ -101,5 +108,5 @@ export async function requireCaseAccess(slug: string) {
       },
     });
 
-  return { attempt, entitlement, show, user };
+  return { attempt, entitlement, show: onlineShow, user };
 }

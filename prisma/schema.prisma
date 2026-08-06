@@ -9,13 +9,51 @@ datasource db {
 
 enum UserRole {
   CUSTOMER
+  PERFORMER
   ADMIN
+}
+
+enum ShowType {
+  STANDARD
+  ESCAPE
+  ONLINE
 }
 
 enum ShowStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum ShowDateStatus {
+  DRAFT
+  OPEN
+  FULLY_CAST
+  CLOSED
+  CANCELED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssignmentStatus {
+  OFFERED
+  CONFIRMED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+  PARTIAL
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
 }
 
 enum PurchaseStatus {
@@ -64,16 +102,33 @@ enum AnswerMatchMode {
 }
 
 model User {
-  id              String        @id @default(cuid())
-  email           String        @unique
+  id              String    @id @default(cuid())
+  email           String    @unique
   emailVerifiedAt DateTime?
   displayName     String?
-  role            UserRole      @default(CUSTOMER)
-  purchases       Purchase[]
-  attempts        CaseAttempt[]
-  sessions        Session[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  role            UserRole  @default(CUSTOMER)
+
+  firstName   String?
+  lastName    String?
+  phone       String?
+  address     String?
+  bio         String?
+  headshotUrl String?
+
+  purchases             Purchase[]
+  attempts              CaseAttempt[]
+  sessions              Session[]
+  roleApplications      RoleApplication[]
+  showDateInterests     ShowDateInterest[]
+  showDateAssignments   ShowDateAssignment[]
+  rehearsalAvailability RehearsalAvailability[]
+  directedShowDates     ShowDate[]              @relation("ShowDateDirector")
+  invitesSent           TroupeInvite[]          @relation("TroupeInviteCreatedBy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
 }
 
 model Session {
@@ -102,59 +157,284 @@ model EmailLoginCode {
   @@index([expiresAt])
 }
 
+/// Admin-issued invitation that grants troupe (PERFORMER) access on first
+/// sign-in. Replaces the shared registration code the Flask app used.
+model TroupeInvite {
+  id          String    @id @default(cuid())
+  email       String
+  role        UserRole  @default(PERFORMER)
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdById String?
+  createdBy   User?     @relation("TroupeInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([email, expiresAt])
+  @@index([expiresAt])
+}
+
+/// Catalog entity shared by live and online productions. One row per show we
+/// offer, regardless of how it is delivered. `type` selects the delivery
+/// model; ONLINE shows carry an additional OnlineShowDetail row.
 model Show {
-  id                          String                @id @default(cuid())
-  title                       String
-  slug                        String                @unique
-  shortDescription            String
-  fullDescription             String
-  coverImageUrl               String?
-  introEnabled                Boolean               @default(false)
-  introTitle                  String?
-  introVideoId                String?
-  introSkippable              Boolean               @default(false)
-  introReplayable             Boolean               @default(false)
-  actOneTitle                 String                @default("Act One")
+  id                String     @id @default(cuid())
+  title             String
+  slug              String     @unique
+  type              ShowType   @default(ONLINE)
+  shortDescription  String
+  fullDescription   String
+  coverImageUrl     String?
+  kidFriendly       Boolean    @default(false)
+  /// Storage reference for the live performance script (R2 key or https URL).
+  scriptUrl         String?
+  difficulty        String?
+  ageRecommendation String?
+  contentAdvisory   String?
+  status            ShowStatus @default(DRAFT)
+  displayOrder      Int        @default(0)
+
+  online OnlineShowDetail?
+
+  suspects      Suspect[]
+  questions     Question[]
+  evidenceItems EvidenceItem[]
+  resultTiers   ResultTier[]
+  purchases     Purchase[]
+  attempts      CaseAttempt[]
+
+  roles            Role[]
+  roleApplications RoleApplication[]
+  showDates        ShowDate[]
+  bookings         Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type, status, displayOrder])
+}
+
+/// Playback, timing, and commerce configuration for ONLINE shows only.
+model OnlineShowDetail {
+  id     String @id @default(cuid())
+  showId String @unique
+  show   Show   @relation(fields: [showId], references: [id], onDelete: Cascade)
+
+  introEnabled    Boolean @default(false)
+  introTitle      String?
+  introVideoId    String?
+  introSkippable  Boolean @default(false)
+  introReplayable Boolean @default(false)
+
+  actOneTitle                 String  @default("Act One")
   actOneVideoId               String?
-  actOneCanPause              Boolean               @default(true)
-  actOneRewindSeconds         Int                   @default(30)
-  lockActOneAfterIntermission Boolean               @default(true)
-  intermissionTitle           String                @default("Make Your Accusation")
-  intermissionMediaType       IntermissionMediaType @default(NONE)
-  intermissionVideoId         String?
-  intermissionImageUrl        String?
-  intermissionVideoLoops      Boolean               @default(true)
-  accusationTimed             Boolean               @default(false)
-  accusationSeconds           Int?
-  timerWarningSeconds         Int?
-  timerExpirationAction       TimerExpirationAction @default(SUBMIT_CURRENT)
-  actTwoTitle                 String                @default("The Reveal")
-  actTwoVideoId               String?
-  actTwoCanPause              Boolean               @default(true)
-  actTwoRewindSeconds         Int                   @default(30)
-  inventoryEnabled            Boolean               @default(false)
-  situationRoomTitle          String                @default("So, how did you do?")
-  resultsMusicEnabled         Boolean               @default(false)
-  resultsMusicUrl             String?
-  vaultTransitionEnabled      Boolean               @default(true)
-  detectiveGaugeEnabled       Boolean               @default(true)
-  priceCents                  Int                   @default(1000)
-  currency                    String                @default("usd")
-  investigationMinutes        Int?
-  revealMinutes               Int?
-  difficulty                  String?
-  ageRecommendation           String?
-  contentAdvisory             String?
-  status                      ShowStatus            @default(DRAFT)
-  displayOrder                Int                   @default(0)
-  suspects                    Suspect[]
-  questions                   Question[]
-  evidenceItems               EvidenceItem[]
-  resultTiers                 ResultTier[]
-  purchases                   Purchase[]
-  attempts                    CaseAttempt[]
-  createdAt                   DateTime              @default(now())
-  updatedAt                   DateTime              @updatedAt
+  actOneCanPause              Boolean @default(true)
+  actOneRewindSeconds         Int     @default(30)
+  lockActOneAfterIntermission Boolean @default(true)
+
+  intermissionTitle      String                @default("Make Your Accusation")
+  intermissionMediaType  IntermissionMediaType @default(NONE)
+  intermissionVideoId    String?
+  intermissionImageUrl   String?
+  intermissionVideoLoops Boolean               @default(true)
+
+  accusationTimed       Boolean               @default(false)
+  accusationSeconds     Int?
+  timerWarningSeconds   Int?
+  timerExpirationAction TimerExpirationAction @default(SUBMIT_CURRENT)
+
+  actTwoTitle         String  @default("The Reveal")
+  actTwoVideoId       String?
+  actTwoCanPause      Boolean @default(true)
+  actTwoRewindSeconds Int     @default(30)
+
+  inventoryEnabled       Boolean @default(false)
+  situationRoomTitle     String  @default("So, how did you do?")
+  resultsMusicEnabled    Boolean @default(false)
+  resultsMusicUrl        String?
+  vaultTransitionEnabled Boolean @default(true)
+  detectiveGaugeEnabled  Boolean @default(true)
+
+  priceCents Int    @default(1000)
+  currency   String @default("usd")
+
+  investigationMinutes Int?
+  revealMinutes        Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// A character in a live show's script.
+model Role {
+  id           String @id @default(cuid())
+  showId       String
+  show         Show   @relation(fields: [showId], references: [id], onDelete: Cascade)
+  name         String
+  gender       String
+  age          String
+  description  String
+  displayOrder Int    @default(0)
+
+  applications RoleApplication[]
+  interests    ShowDateInterest[]
+  assignments  ShowDateAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([showId, displayOrder])
+}
+
+/// Standing roster interest: "I would play this character in future castings."
+/// Distinct from ShowDateInterest, which is tied to one scheduled performance.
+model RoleApplication {
+  id          String            @id @default(cuid())
+  performerId String
+  performer   User              @relation(fields: [performerId], references: [id], onDelete: Cascade)
+  showId      String
+  show        Show              @relation(fields: [showId], references: [id], onDelete: Cascade)
+  roleId      String
+  role        Role              @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([performerId, roleId])
+  @@index([showId, status])
+  @@index([performerId, status])
+}
+
+/// A scheduled live performance of a show.
+model ShowDate {
+  id        String         @id @default(cuid())
+  showId    String
+  show      Show           @relation(fields: [showId], references: [id], onDelete: Cascade)
+  date      DateTime
+  status    ShowDateStatus @default(DRAFT)
+  location  String?
+  customer  String?
+  attendees Int?
+  notes     String?
+
+  /// Days before the performance across which rehearsals are generated.
+  rehearsalTimeframe Int  @default(14)
+  requiredRehearsals Int  @default(4)
+  minPerformers      Int?
+  maxPerformers      Int?
+
+  techDate     DateTime?
+  techLocation String?
+
+  directorId String?
+  director   User?   @relation("ShowDateDirector", fields: [directorId], references: [id], onDelete: SetNull)
+
+  rehearsals  Rehearsal[]
+  interests   ShowDateInterest[]
+  assignments ShowDateAssignment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, date])
+  @@index([showId, date])
+  @@index([directorId])
+}
+
+/// Per-performance, per-role opt-in from a performer, with the scheduling
+/// conflicts and questions they raised when applying.
+model ShowDateInterest {
+  id          String   @id @default(cuid())
+  showDateId  String
+  showDate    ShowDate @relation(fields: [showDateId], references: [id], onDelete: Cascade)
+  roleId      String
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  performerId String
+  performer   User     @relation(fields: [performerId], references: [id], onDelete: Cascade)
+
+  questions            String?
+  conflictTech         Boolean  @default(false)
+  /// Rehearsal ids the performer flagged as conflicts.
+  conflictRehearsalIds String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([showDateId, roleId, performerId])
+  @@index([showDateId, roleId])
+  @@index([performerId])
+}
+
+/// A cast seat for one role on one performance. Offered by an admin or the
+/// show's director, then confirmed by the performer.
+model ShowDateAssignment {
+  id          String           @id @default(cuid())
+  showDateId  String
+  showDate    ShowDate         @relation(fields: [showDateId], references: [id], onDelete: Cascade)
+  roleId      String
+  role        Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  performerId String
+  performer   User             @relation(fields: [performerId], references: [id], onDelete: Cascade)
+  status      AssignmentStatus @default(OFFERED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([showDateId, roleId])
+  @@index([showDateId, status])
+  @@index([performerId, status])
+}
+
+model Rehearsal {
+  id         String   @id @default(cuid())
+  showDateId String
+  showDate   ShowDate @relation(fields: [showDateId], references: [id], onDelete: Cascade)
+  date       DateTime
+  location   String
+  notes      String?
+
+  availability RehearsalAvailability[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([showDateId, date])
+}
+
+model RehearsalAvailability {
+  id          String             @id @default(cuid())
+  rehearsalId String
+  rehearsal   Rehearsal          @relation(fields: [rehearsalId], references: [id], onDelete: Cascade)
+  performerId String
+  performer   User               @relation(fields: [performerId], references: [id], onDelete: Cascade)
+  status      AvailabilityStatus @default(AVAILABLE)
+  note        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rehearsalId, performerId])
+  @@index([performerId])
+}
+
+/// Public booking enquiry submitted from the marketing site.
+model Booking {
+  id            String        @id @default(cuid())
+  name          String
+  email         String
+  phone         String
+  showId        String
+  show          Show          @relation(fields: [showId], references: [id], onDelete: Restrict)
+  preferredDate DateTime      @db.Date
+  guestCount    Int
+  message       String?
+  status        BookingStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([showId])
 }
 
 model Suspect {

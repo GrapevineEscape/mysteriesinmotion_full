@@ -29,6 +29,52 @@ export async function updateShowConfiguration(formData: FormData) {
   if (!id) throw new Error("Show identifier is required.");
 
   const requestedPublication = formData.get("status") === "PUBLISHED";
+
+  // Playback configuration lives on OnlineShowDetail, so the same values are
+  // used whether the row already exists or is being created for the first time.
+  const onlineConfiguration = {
+    priceCents: 1000,
+    introEnabled: checked(formData, "introEnabled"),
+    introTitle: text(formData, "introTitle"),
+    introVideoId: text(formData, "introVideoId"),
+    introSkippable: checked(formData, "introSkippable"),
+    introReplayable: checked(formData, "introReplayable"),
+    actOneTitle: text(formData, "actOneTitle") ?? "Act One",
+    actOneVideoId: text(formData, "actOneVideoId"),
+    actOneCanPause: checked(formData, "actOneCanPause"),
+    actOneRewindSeconds: 30,
+    lockActOneAfterIntermission: true,
+    intermissionTitle:
+      text(formData, "intermissionTitle") ?? "Make Your Accusation",
+    intermissionMediaType:
+      formData.get("intermissionMediaType") === "VIDEO"
+        ? ("VIDEO" as const)
+        : formData.get("intermissionMediaType") === "IMAGE"
+          ? ("IMAGE" as const)
+          : ("NONE" as const),
+    intermissionVideoId: text(formData, "intermissionVideoId"),
+    intermissionImageUrl: text(formData, "intermissionImageUrl"),
+    intermissionVideoLoops: checked(formData, "intermissionVideoLoops"),
+    accusationTimed: checked(formData, "accusationTimed"),
+    accusationSeconds: positiveInteger(formData, "accusationSeconds"),
+    timerWarningSeconds: positiveInteger(formData, "timerWarningSeconds"),
+    timerExpirationAction:
+      formData.get("timerExpirationAction") === "MARK_UNANSWERED_INCORRECT"
+        ? ("MARK_UNANSWERED_INCORRECT" as const)
+        : ("SUBMIT_CURRENT" as const),
+    actTwoTitle: text(formData, "actTwoTitle") ?? "The Reveal",
+    actTwoVideoId: text(formData, "actTwoVideoId"),
+    actTwoCanPause: checked(formData, "actTwoCanPause"),
+    actTwoRewindSeconds: 30,
+    inventoryEnabled: checked(formData, "inventoryEnabled"),
+    situationRoomTitle:
+      text(formData, "situationRoomTitle") ?? "So, how did you do?",
+    resultsMusicEnabled: checked(formData, "resultsMusicEnabled"),
+    resultsMusicUrl: text(formData, "resultsMusicUrl"),
+    vaultTransitionEnabled: checked(formData, "vaultTransitionEnabled"),
+    detectiveGaugeEnabled: checked(formData, "detectiveGaugeEnabled"),
+  };
+
   const show = await db.show.update({
     where: { id },
     data: {
@@ -39,46 +85,13 @@ export async function updateShowConfiguration(formData: FormData) {
       // Publication is granted only after the saved configuration passes the
       // complete readiness check below.
       status: "DRAFT",
-      priceCents: 1000,
-      introEnabled: checked(formData, "introEnabled"),
-      introTitle: text(formData, "introTitle"),
-      introVideoId: text(formData, "introVideoId"),
-      introSkippable: checked(formData, "introSkippable"),
-      introReplayable: checked(formData, "introReplayable"),
-      actOneTitle: text(formData, "actOneTitle") ?? "Act One",
-      actOneVideoId: text(formData, "actOneVideoId"),
-      actOneCanPause: checked(formData, "actOneCanPause"),
-      actOneRewindSeconds: 30,
-      lockActOneAfterIntermission: true,
-      intermissionTitle:
-        text(formData, "intermissionTitle") ?? "Make Your Accusation",
-      intermissionMediaType:
-        formData.get("intermissionMediaType") === "VIDEO"
-          ? "VIDEO"
-          : formData.get("intermissionMediaType") === "IMAGE"
-            ? "IMAGE"
-            : "NONE",
-      intermissionVideoId: text(formData, "intermissionVideoId"),
-      intermissionImageUrl: text(formData, "intermissionImageUrl"),
-      intermissionVideoLoops: checked(formData, "intermissionVideoLoops"),
-      accusationTimed: checked(formData, "accusationTimed"),
-      accusationSeconds: positiveInteger(formData, "accusationSeconds"),
-      timerWarningSeconds: positiveInteger(formData, "timerWarningSeconds"),
-      timerExpirationAction:
-        formData.get("timerExpirationAction") === "MARK_UNANSWERED_INCORRECT"
-          ? "MARK_UNANSWERED_INCORRECT"
-          : "SUBMIT_CURRENT",
-      actTwoTitle: text(formData, "actTwoTitle") ?? "The Reveal",
-      actTwoVideoId: text(formData, "actTwoVideoId"),
-      actTwoCanPause: checked(formData, "actTwoCanPause"),
-      actTwoRewindSeconds: 30,
-      inventoryEnabled: checked(formData, "inventoryEnabled"),
-      situationRoomTitle:
-        text(formData, "situationRoomTitle") ?? "So, how did you do?",
-      resultsMusicEnabled: checked(formData, "resultsMusicEnabled"),
-      resultsMusicUrl: text(formData, "resultsMusicUrl"),
-      vaultTransitionEnabled: checked(formData, "vaultTransitionEnabled"),
-      detectiveGaugeEnabled: checked(formData, "detectiveGaugeEnabled"),
+      type: "ONLINE",
+      online: {
+        upsert: {
+          create: onlineConfiguration,
+          update: onlineConfiguration,
+        },
+      },
     },
   });
 

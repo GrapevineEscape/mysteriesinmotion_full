@@ -24,7 +24,9 @@ export default async function AdminShowPage({
       _count: { select: { evidenceItems: true } },
     },
   });
-  if (!show) notFound();
+  // This screen configures online playback, so it requires the online detail.
+  if (!show?.online) notFound();
+  const online = show.online;
   const readiness = evaluateShowReadiness(show);
 
   return (
@@ -92,46 +94,46 @@ export default async function AdminShowPage({
           Video fields accept either the Cloudflare Stream Video UID or the
           complete Cloudflare embed URL.
         </p>
-        <label><input defaultChecked={show.introEnabled} name="introEnabled" type="checkbox" /> Enable introduction</label>
+        <label><input defaultChecked={online.introEnabled} name="introEnabled" type="checkbox" /> Enable introduction</label>
         <div className="question-editor-grid">
-          <label><span>Introduction title</span><input defaultValue={show.introTitle ?? ""} name="introTitle" /></label>
-          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={show.introVideoId ?? ""} name="introVideoId" /></label>
-          <label><input defaultChecked={show.introSkippable} name="introSkippable" type="checkbox" /> Allow skip</label>
-          <label><input defaultChecked={show.introReplayable} name="introReplayable" type="checkbox" /> Allow replay</label>
+          <label><span>Introduction title</span><input defaultValue={online.introTitle ?? ""} name="introTitle" /></label>
+          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={online.introVideoId ?? ""} name="introVideoId" /></label>
+          <label><input defaultChecked={online.introSkippable} name="introSkippable" type="checkbox" /> Allow skip</label>
+          <label><input defaultChecked={online.introReplayable} name="introReplayable" type="checkbox" /> Allow replay</label>
         </div>
 
         <h2>Act One — Required</h2>
         <div className="question-editor-grid">
-          <label><span>Displayed title</span><input defaultValue={show.actOneTitle} name="actOneTitle" required /></label>
-          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={show.actOneVideoId ?? ""} name="actOneVideoId" /></label>
-          <label><input defaultChecked={show.actOneCanPause} name="actOneCanPause" type="checkbox" /> Allow pause</label>
+          <label><span>Displayed title</span><input defaultValue={online.actOneTitle} name="actOneTitle" required /></label>
+          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={online.actOneVideoId ?? ""} name="actOneVideoId" /></label>
+          <label><input defaultChecked={online.actOneCanPause} name="actOneCanPause" type="checkbox" /> Allow pause</label>
           <p>Back 30 seconds is enabled. Forward seeking is disabled. Act One locks permanently on entering Intermission.</p>
         </div>
 
         <h2>Intermission &amp; Decision — Required</h2>
         <div className="question-editor-grid">
-          <label><span>Displayed title</span><input defaultValue={show.intermissionTitle} name="intermissionTitle" required /></label>
-          <label><span>Media</span><select defaultValue={show.intermissionMediaType} name="intermissionMediaType"><option value="NONE">No media</option><option value="VIDEO">Video</option><option value="IMAGE">Image</option></select></label>
-          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={show.intermissionVideoId ?? ""} name="intermissionVideoId" /></label>
-          <label><span>Image URL</span><input defaultValue={show.intermissionImageUrl ?? ""} name="intermissionImageUrl" /></label>
-          <label><input defaultChecked={show.intermissionVideoLoops} name="intermissionVideoLoops" type="checkbox" /> Loop video while deciding</label>
-          <label><input defaultChecked={show.accusationTimed} name="accusationTimed" type="checkbox" /> Timed accusation</label>
-          <label><span>Timer seconds</span><input defaultValue={show.accusationSeconds ?? ""} min="1" name="accusationSeconds" type="number" /></label>
-          <label><span>Warning seconds</span><input defaultValue={show.timerWarningSeconds ?? ""} min="1" name="timerWarningSeconds" type="number" /></label>
-          <label><span>When time expires</span><select defaultValue={show.timerExpirationAction} name="timerExpirationAction"><option value="SUBMIT_CURRENT">Submit current answers</option><option value="MARK_UNANSWERED_INCORRECT">Mark unanswered incorrect</option></select></label>
+          <label><span>Displayed title</span><input defaultValue={online.intermissionTitle} name="intermissionTitle" required /></label>
+          <label><span>Media</span><select defaultValue={online.intermissionMediaType} name="intermissionMediaType"><option value="NONE">No media</option><option value="VIDEO">Video</option><option value="IMAGE">Image</option></select></label>
+          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={online.intermissionVideoId ?? ""} name="intermissionVideoId" /></label>
+          <label><span>Image URL</span><input defaultValue={online.intermissionImageUrl ?? ""} name="intermissionImageUrl" /></label>
+          <label><input defaultChecked={online.intermissionVideoLoops} name="intermissionVideoLoops" type="checkbox" /> Loop video while deciding</label>
+          <label><input defaultChecked={online.accusationTimed} name="accusationTimed" type="checkbox" /> Timed accusation</label>
+          <label><span>Timer seconds</span><input defaultValue={online.accusationSeconds ?? ""} min="1" name="accusationSeconds" type="number" /></label>
+          <label><span>Warning seconds</span><input defaultValue={online.timerWarningSeconds ?? ""} min="1" name="timerWarningSeconds" type="number" /></label>
+          <label><span>When time expires</span><select defaultValue={online.timerExpirationAction} name="timerExpirationAction"><option value="SUBMIT_CURRENT">Submit current answers</option><option value="MARK_UNANSWERED_INCORRECT">Mark unanswered incorrect</option></select></label>
         </div>
 
         <h2>Act Two &amp; Situation Room</h2>
         <div className="question-editor-grid">
-          <label><span>Act Two title</span><input defaultValue={show.actTwoTitle} name="actTwoTitle" required /></label>
-          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={show.actTwoVideoId ?? ""} name="actTwoVideoId" /></label>
-          <label><input defaultChecked={show.actTwoCanPause} name="actTwoCanPause" type="checkbox" /> Allow pause</label>
+          <label><span>Act Two title</span><input defaultValue={online.actTwoTitle} name="actTwoTitle" required /></label>
+          <label><span>Cloudflare Video UID or embed URL</span><input defaultValue={online.actTwoVideoId ?? ""} name="actTwoVideoId" /></label>
+          <label><input defaultChecked={online.actTwoCanPause} name="actTwoCanPause" type="checkbox" /> Allow pause</label>
           <label><input defaultChecked={show._count.evidenceItems > 0} name="inventoryEnabled" type="checkbox" /> Enable Case Inventory</label>
-          <label><span>Situation Room title</span><input defaultValue={show.situationRoomTitle} name="situationRoomTitle" /></label>
-          <label><span>Background music URL</span><input defaultValue={show.resultsMusicUrl ?? ""} name="resultsMusicUrl" /></label>
-          <label><input defaultChecked={show.resultsMusicEnabled} name="resultsMusicEnabled" type="checkbox" /> Enable results music</label>
-          <label><input defaultChecked={show.vaultTransitionEnabled} name="vaultTransitionEnabled" type="checkbox" /> Vault transition</label>
-          <label><input defaultChecked={show.detectiveGaugeEnabled} name="detectiveGaugeEnabled" type="checkbox" /> Detective gauge</label>
+          <label><span>Situation Room title</span><input defaultValue={online.situationRoomTitle} name="situationRoomTitle" /></label>
+          <label><span>Background music URL</span><input defaultValue={online.resultsMusicUrl ?? ""} name="resultsMusicUrl" /></label>
+          <label><input defaultChecked={online.resultsMusicEnabled} name="resultsMusicEnabled" type="checkbox" /> Enable results music</label>
+          <label><input defaultChecked={online.vaultTransitionEnabled} name="vaultTransitionEnabled" type="checkbox" /> Vault transition</label>
+          <label><input defaultChecked={online.detectiveGaugeEnabled} name="detectiveGaugeEnabled" type="checkbox" /> Detective gauge</label>
         </div>
 
         <button className="button button-primary" type="submit">Save show configuration</button>

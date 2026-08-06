@@ -66,11 +66,20 @@ async function authorizedAttempt(slug: string, attemptId: string) {
   const show = await db.show.findUnique({
     where: { slug },
     include: {
+      online: true,
       evidenceItems: true,
       questions: { include: { choices: true } },
     },
   });
   if (!show) return { error: "Mystery not found.", status: 404 } as const;
+
+  // Only online productions have playable progress. Rebuilding the object
+  // carries the non-null narrowing through to the caller.
+  const { online, ...showBase } = show;
+  if (!online) {
+    return { error: "Mystery not found.", status: 404 } as const;
+  }
+  const onlineShow = { ...showBase, online };
 
   const attempt = await db.caseAttempt.findFirst({
     where: { id: attemptId, userId: user.id, showId: show.id },
@@ -93,7 +102,7 @@ async function authorizedAttempt(slug: string, attemptId: string) {
       status: 403,
     } as const;
   }
-  return { attempt, show, user } as const;
+  return { attempt, show: onlineShow, user } as const;
 }
 
 function sanitizeDraftAnswers(
@@ -282,14 +291,15 @@ export async function PATCH(
   ) {
     update.intermissionStartedAt = attempt.intermissionStartedAt ?? now;
     update.status = "READY_TO_ACCUSE";
+    const online = show.online;
     if (
-      show.accusationTimed &&
-      show.accusationSeconds &&
-      show.accusationSeconds > 0 &&
+      online.accusationTimed &&
+      online.accusationSeconds &&
+      online.accusationSeconds > 0 &&
       !attempt.timerExpiresAt
     ) {
       update.timerExpiresAt = new Date(
-        now.getTime() + show.accusationSeconds * 1_000,
+        now.getTime() + online.accusationSeconds * 1_000,
       );
     }
   }

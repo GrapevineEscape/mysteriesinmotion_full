@@ -218,6 +218,7 @@ export async function GET(request: NextRequest) {
     const shows = await db.show.findMany({
       orderBy: { displayOrder: "asc" },
       include: {
+        online: { select: { priceCents: true } },
         purchases: true,
         attempts: {
           select: {
@@ -273,7 +274,7 @@ export async function GET(request: NextRequest) {
       rows.push([
         show.title,
         show.status,
-        (show.priceCents / 100).toFixed(2),
+        ((show.online?.priceCents ?? 0) / 100).toFixed(2),
         show.purchases.length,
         show.purchases.filter((purchase) => purchase.status === "PAID").length,
         show.purchases.filter(
