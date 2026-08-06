@@ -27,7 +27,9 @@ and `PUBLIC_PLAY_DOMAIN` empty until play DNS is ready.
 
 ## 2. Wait for first deploy
 
-`preDeployCommand` runs `prisma migrate deploy`. Confirm `/api/health` is green.
+Free tier cannot use a pre-deploy command. Schema migrations still run because
+`npm start` is `prisma migrate deploy && next start`. Confirm `/api/health` is
+green.
 
 ## 3. Load show content into the new database
 
