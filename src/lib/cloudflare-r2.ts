@@ -104,7 +104,9 @@ export async function putR2Object(
   body: Buffer,
   contentType: string,
 ) {
-  const bucket = process.env.R2_ASSET_BUCKET?.trim();
+  // A bucket name, not a path. Tolerate a trailing slash rather than passing it
+  // through and getting back an opaque complaint about an invalid bucket.
+  const bucket = process.env.R2_ASSET_BUCKET?.trim().replace(/^\/+|\/+$/g, "");
   const client = r2Client();
   if (!bucket || !client) {
     throw new R2ConfigurationError(
