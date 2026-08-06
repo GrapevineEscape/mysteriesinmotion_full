@@ -125,6 +125,30 @@ The run is idempotent. Rows are matched on natural keys, so an interrupted run
 can simply be repeated. Scripts and headshots are reported but not uploaded;
 they move separately, since the database only holds a reference to them.
 
+### Moving the files
+
+Flask kept scripts and uploads on disk. `npm run migrate:assets` copies them to
+R2 and points the migrated records at them; run it after `migrate:flask`, since
+it matches files to rows that must already exist. It is also idempotent, because
+a record that already carries a reference is left alone.
+
+Confirm the credentials first:
+
+```bash
+npm run verify:r2
+```
+
+That writes and reads back a probe file, then deletes it. It exists because
+Cloudflare answers most configuration mistakes with the same bare 403, so each
+capability is checked separately and reported as the thing to change. The usual
+mistake is putting the API token's name in `R2_ASSET_BUCKET` instead of the
+bucket's name; the two are easy to conflate on the token screen, and the symptom
+is a 403 on a bucket that plainly exists.
+
+Scripts and headshots are private, served only through short-lived signed URLs,
+so the bucket holding them must not have public access or a custom domain
+enabled.
+
 ## Render deployment
 
 Create a new Render Blueprint from this repository. `render.yaml` defines:
