@@ -69,8 +69,11 @@ services:
         value: online-mystery-images
 
 databases:
+  # Free tier allows only one free Postgres per account. The Flask / Online
+  # Mystery databases already use that slot, so this combined stack needs a
+  # paid plan (or you must delete/suspend an old free DB first).
   - name: mim-db
-    plan: free
+    plan: basic-256mb
     region: ohio
     databaseName: mim
     user: mim
