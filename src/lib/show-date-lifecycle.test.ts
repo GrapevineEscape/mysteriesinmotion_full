@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { addDays, appToday, dayInZone, startOfDayInZone } from "@/lib/app-time";
+import {
+  addDays,
+  appToday,
+  dayInZone,
+  parseLocalDateTime,
+  startOfDayInZone,
+  toLocalDateTimeInput,
+} from "@/lib/app-time";
 import {
   castingStatusLabel,
   isCastingOpen,
@@ -47,6 +54,31 @@ describe("calendar days in the troupe timezone", () => {
   it("reports today in the troupe timezone, not the server's", () => {
     const justAfterMidnightUtc = new Date("2026-06-15T02:00:00Z");
     assert.equal(appToday(justAfterMidnightUtc, CHICAGO), "2026-06-14");
+  });
+});
+
+describe("datetime-local values", () => {
+  it("reads a form value as troupe local time", () => {
+    assert.equal(
+      parseLocalDateTime("2026-06-14T19:30", CHICAGO)?.toISOString(),
+      "2026-06-15T00:30:00.000Z",
+    );
+  });
+
+  it("survives a round trip through the input", () => {
+    const value = "2026-01-04T08:05";
+    const instant = parseLocalDateTime(value, CHICAGO);
+    assert.equal(toLocalDateTimeInput(instant, CHICAGO), value);
+  });
+
+  it("rejects anything the browser did not fill in", () => {
+    for (const value of ["", "2026-06-14", "not a date", null, undefined]) {
+      assert.equal(parseLocalDateTime(value, CHICAGO), null, String(value));
+    }
+  });
+
+  it("renders an empty input for a missing date", () => {
+    assert.equal(toLocalDateTimeInput(null, CHICAGO), "");
   });
 });
 

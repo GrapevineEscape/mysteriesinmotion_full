@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   adminDate,
@@ -33,6 +34,7 @@ export default async function BusinessDashboardPage({
 }: {
   searchParams: Promise<{ period?: string }>;
 }) {
+  await requireAdmin();
   const { period: rawPeriod } = await searchParams;
   const period = parseReportPeriod(rawPeriod);
   const now = new Date();
@@ -88,7 +90,12 @@ export default async function BusinessDashboardPage({
     }),
     db.show.findMany({
       orderBy: { displayOrder: "asc" },
-      select: { id: true, title: true, status: true, priceCents: true },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        online: { select: { priceCents: true } },
+      },
     }),
   ]);
 
@@ -530,7 +537,11 @@ export default async function BusinessDashboardPage({
                 <tr key={show.id}>
                   <td>
                     <strong>{show.title}</strong>
-                    <small>List price {formatMoney(show.priceCents)}</small>
+                    <small>
+                      {show.online
+                        ? `List price ${formatMoney(show.online.priceCents)}`
+                        : "Live performance"}
+                    </small>
                   </td>
                   <td>{show.status}</td>
                   <td>{show.purchases.length}</td>

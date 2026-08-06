@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { canStartNewGame, gameCanContinue } from "@/lib/entitlements";
 import {
@@ -35,6 +36,7 @@ export default async function CustomerSupportPage({
 }: {
   searchParams: Promise<{ q?: string; notice?: string }>;
 }) {
+  await requireAdmin();
   const { q: rawQuery, notice } = await searchParams;
   const query = rawQuery?.trim().toLowerCase() ?? "";
   const users = await db.user.findMany({

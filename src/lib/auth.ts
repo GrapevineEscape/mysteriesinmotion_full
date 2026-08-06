@@ -32,6 +32,16 @@ export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+/** Whether signing in with this address would create a new account. */
+export async function isNewAccount(emailInput: string) {
+  const email = normalizeEmail(emailInput);
+  const existing = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  return !existing;
+}
+
 /** Where each audience lands when no specific destination was requested. */
 export function defaultLandingPath(role: UserRole) {
   if (role === "ADMIN") return "/admin";
@@ -160,11 +170,18 @@ export async function verifyLoginCode(
       ? "ADMIN"
       : (invite?.role ?? null);
 
+    // A name supplied at sign-in only fills a gap. Returning members keep the
+    // name they set on their profile, so a typo here cannot overwrite it.
+    const existing = await transaction.user.findUnique({
+      where: { email },
+      select: { displayName: true },
+    });
+
     const user = await transaction.user.upsert({
       where: { email },
       update: {
         emailVerifiedAt: new Date(),
-        ...(displayName ? { displayName } : {}),
+        ...(displayName && !existing?.displayName ? { displayName } : {}),
         ...(grantedRole ? { role: grantedRole } : {}),
       },
       create: {

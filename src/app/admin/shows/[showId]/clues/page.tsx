@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminShowNav } from "@/components/admin-show-nav";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createClue, updateClue } from "./actions";
 
@@ -18,6 +19,7 @@ export default async function ClueAdminPage({
   params: Promise<{ showId: string }>;
   searchParams: Promise<{ edit?: string }>;
 }) {
+  await requireAdmin();
   const { showId } = await params;
   const { edit } = await searchParams;
   const show = await db.show.findUnique({

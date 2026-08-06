@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminShowNav } from "@/components/admin-show-nav";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { DEFAULT_SITUATION_RANK_BANDS } from "@/lib/situation-room-types";
 import { updateDetectiveLevelNames } from "./actions";
@@ -11,6 +12,7 @@ export default async function DetectiveLevelsPage({
   params: Promise<{ showId: string }>;
   searchParams: Promise<{ saved?: string }>;
 }) {
+  await requireAdmin();
   const { showId } = await params;
   const { saved } = await searchParams;
   const show = await db.show.findUnique({

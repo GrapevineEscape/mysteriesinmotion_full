@@ -615,8 +615,371 @@
   letter-spacing: 0.06em;
 }
 
+/* Administration */
+
+.portal-nav-group {
+  display: grid;
+  gap: 6px;
+}
+
+.portal-nav-group + .portal-nav-group {
+  margin-top: 16px;
+}
+
+.portal-nav-group > p {
+  margin: 0;
+  padding-inline: 12px;
+  color: rgba(244, 240, 231, 0.42);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.portal-detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.portal-detail-list dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portal-detail-list dd {
+  margin: 4px 0 0;
+}
+
+.portal-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.portal-filter-group a {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.portal-filter-group a[aria-current="true"] {
+  border-color: var(--red);
+  background: var(--red);
+  color: white;
+}
+
+.portal-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(24, 34, 42, 0.04);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.portal-bulk-bar[data-active="true"] {
+  border-color: rgba(198, 155, 84, 0.5);
+  background: rgba(198, 155, 84, 0.14);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.portal-bulk-bar .button-row {
+  margin-top: 0;
+  gap: 10px;
+}
+
+.portal-fieldset {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.portal-fieldset legend {
+  padding-inline: 6px;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.portal-pill[data-tone="draft"],
+.portal-pill[data-tone="closed"],
+.portal-pill[data-tone="archived"] {
+  color: var(--muted);
+}
+
+.portal-pill[data-tone="admin"],
+.portal-pill[data-tone="published"] {
+  border-color: rgba(76, 143, 88, 0.4);
+  background: rgba(129, 199, 132, 0.24);
+}
+
+.button-danger {
+  border-color: rgba(168, 45, 45, 0.4);
+  background: rgba(239, 154, 154, 0.24);
+  color: var(--red-dark);
+}
+
+.button-danger:hover {
+  background: rgba(239, 154, 154, 0.4);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Setup wizard */
+
+.admin-wizard-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 0;
+}
+
+.admin-wizard-steps li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.admin-wizard-steps li[data-state="current"] {
+  border-color: var(--red);
+  color: var(--ink);
+}
+
+.admin-wizard-steps li[data-state="done"] {
+  color: var(--ink);
+}
+
+.admin-wizard-step-number {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(24, 34, 42, 0.08);
+  font-size: 0.78rem;
+}
+
+.admin-wizard-steps li[data-state="current"] .admin-wizard-step-number {
+  background: var(--red);
+  color: white;
+}
+
+.admin-wizard-steps li[data-state="done"] .admin-wizard-step-number {
+  background: rgba(129, 199, 132, 0.4);
+}
+
+.admin-cast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.admin-rehearsal-list {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-rehearsal-list li {
+  display: grid;
+  grid-template-columns: minmax(150px, auto) minmax(180px, 1fr) minmax(180px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+}
+
+.admin-rehearsal-list li[data-included="false"] {
+  opacity: 0.55;
+}
+
+.admin-rehearsal-list input:not([type="checkbox"]):not([type="hidden"]) {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+/* Catalog roles */
+
+.admin-role-list li {
+  align-items: start;
+}
+
+.admin-role-list small {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.admin-role-form {
+  max-width: none;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(24, 34, 42, 0.03);
+}
+
+/* Casting board */
+
+.admin-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.admin-board-role {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.admin-board-role > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-board-role h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.admin-board-role header small {
+  color: var(--muted);
+}
+
+.admin-board-seat {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 9px;
+  background: rgba(24, 34, 42, 0.04);
+}
+
+.admin-board-seat p {
+  margin: 0;
+}
+
+.admin-seat-form {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.admin-seat-form select {
+  width: 100%;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  font: inherit;
+}
+
+.admin-seat-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin-board-applicants summary {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-board-applicants ul {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.admin-board-applicants p {
+  margin: 3px 0 0;
+  font-size: 0.88rem;
+}
+
+.admin-board-conflict {
+  color: var(--red-dark);
+}
+
+/* Performer profile */
+
+.admin-performer-profile img {
+  width: 140px;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.admin-performer-bio h2 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.admin-performer-bio p {
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .portal-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-rehearsal-list li {
     grid-template-columns: minmax(0, 1fr);
   }
 

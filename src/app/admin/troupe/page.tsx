@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { pendingTroupeInvites } from "@/lib/troupe-invites";
 import {
@@ -26,6 +27,7 @@ function memberName(member: {
 }
 
 export default async function TroupeAccessPage() {
+  await requireAdmin();
   const [members, invites] = await Promise.all([
     db.user.findMany({
       where: { role: { in: ["PERFORMER", "ADMIN"] } },

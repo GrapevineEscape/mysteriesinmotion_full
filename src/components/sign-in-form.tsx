@@ -7,6 +7,7 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
   const router = useRouter();
   const [step, setStep] = useState<"email" | "code">("email");
   const [displayName, setDisplayName] = useState("");
+  const [needsName, setNeedsName] = useState(false);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -27,6 +28,10 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
     setStep("code");
   }
 
+  /**
+   * A name is only asked for once the server says this address has no account
+   * yet, so returning members never retype theirs.
+   */
   async function verifyCode(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -36,27 +41,22 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ displayName, email, code, next: nextPath }),
     });
-    const result = (await response.json()) as { error?: string; next?: string };
+    const result = (await response.json()) as {
+      error?: string;
+      needsName?: boolean;
+      next?: string;
+    };
     setBusy(false);
-    if (!response.ok) return setError(result.error ?? "Unable to verify the code.");
+    if (!response.ok) {
+      if (result.needsName) setNeedsName(true);
+      return setError(result.error ?? "Unable to verify the code.");
+    }
     router.push(result.next ?? "/my-cases");
     router.refresh();
   }
 
   return (
     <form onSubmit={step === "email" ? requestCode : verifyCode}>
-      <label htmlFor="display-name">Full name</label>
-      <input
-        autoComplete="name"
-        disabled={step === "code" || busy}
-        id="display-name"
-        maxLength={100}
-        onChange={(event) => setDisplayName(event.target.value)}
-        placeholder="Alex Detective"
-        required
-        type="text"
-        value={displayName}
-      />
       <label htmlFor="email">Email address</label>
       <input
         autoComplete="email"
@@ -80,6 +80,22 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
             pattern="\d{6}"
             required
             value={code}
+          />
+        </>
+      )}
+      {needsName && (
+        <>
+          <label htmlFor="display-name">Full name</label>
+          <input
+            autoComplete="name"
+            autoFocus
+            id="display-name"
+            maxLength={100}
+            onChange={(event) => setDisplayName(event.target.value)}
+            placeholder="Alex Detective"
+            required
+            type="text"
+            value={displayName}
           />
         </>
       )}

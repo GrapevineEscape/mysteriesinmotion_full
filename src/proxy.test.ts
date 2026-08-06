@@ -91,8 +91,8 @@ describe("host routing", () => {
 });
 
 describe("portal chrome", () => {
-  it("marks the troupe portal so it renders its own sidebar", () => {
-    for (const path of ["/troupe", "/troupe/casting/abc"]) {
+  it("marks the signed-in areas so they render their own sidebar", () => {
+    for (const path of ["/troupe", "/troupe/casting/abc", "/admin", "/admin/bookings"]) {
       assert.equal(surfaceOf(proxy(request(APEX, path))), "portal", path);
     }
   });

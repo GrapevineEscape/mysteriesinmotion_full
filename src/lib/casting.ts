@@ -1,4 +1,6 @@
 import type { Prisma, User } from "@prisma/client";
+import { redirect } from "next/navigation";
+import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   checkOffer,
@@ -26,6 +28,18 @@ export function canManageCasting(
 ) {
   if (!user) return false;
   return user.role === "ADMIN" || showDate.directorId === user.id;
+}
+
+/**
+ * Casting is the one part of administration a director reaches without being an
+ * administrator, and only for the performances assigned to them.
+ */
+export async function requireCastingManager(showDate: {
+  directorId: string | null;
+}) {
+  const user = await requireTroupe();
+  if (!canManageCasting(user, showDate)) redirect("/troupe");
+  return user;
 }
 
 export function activeSeatForPerformer(
@@ -193,6 +207,29 @@ export function acceptOffer(assignmentId: string, performerId: string) {
 
 export function declineOffer(assignmentId: string, performerId: string) {
   return respondToOffer(assignmentId, performerId, false);
+}
+
+/**
+ * Who is on the roster for each role of a show: the performers whose standing
+ * interest an admin approved. These are the people a seat can be offered to.
+ */
+export async function rosterByRole(showId: string) {
+  const approved = await db.roleApplication.findMany({
+    where: { showId, status: "APPROVED" },
+    include: { performer: true },
+    orderBy: [
+      { performer: { lastName: "asc" } },
+      { performer: { firstName: "asc" } },
+    ],
+  });
+
+  const byRole = new Map<string, typeof approved>();
+  for (const application of approved) {
+    const bucket = byRole.get(application.roleId) ?? [];
+    bucket.push(application);
+    byRole.set(application.roleId, bucket);
+  }
+  return byRole;
 }
 
 function loadBoardAssignments(showDateId: string) {

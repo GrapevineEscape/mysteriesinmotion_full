@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { AdminShowNav } from "@/components/admin-show-nav";
 import { QuestionBuilder } from "@/components/question-builder";
@@ -12,6 +13,7 @@ export default async function QuestionAdminPage({
   params: Promise<{ showId: string }>;
   searchParams: Promise<{ edit?: string }>;
 }) {
+  await requireAdmin();
   const { showId } = await params;
   const { edit } = await searchParams;
   const show = await db.show.findUnique({

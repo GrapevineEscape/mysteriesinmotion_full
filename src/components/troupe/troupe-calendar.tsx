@@ -20,7 +20,8 @@ export type CalendarEvent = {
   when: string;
   location: string;
   statusLabel: string;
-  yourRole: string | null;
+  /** One extra fact worth surfacing: a performer's role, or casting progress. */
+  detail: CalendarDetail | null;
   notes: string | null;
   castingHref: string | null;
 };
@@ -108,10 +109,10 @@ export function TroupeCalendar({ events }: { events: CalendarEvent[] }) {
                 <dt>Status</dt>
                 <dd>{selected.statusLabel}</dd>
               </div>
-              {selected.yourRole && (
+              {selected.detail && (
                 <div>
-                  <dt>Your role</dt>
-                  <dd>{selected.yourRole}</dd>
+                  <dt>{selected.detail.label}</dt>
+                  <dd>{selected.detail.value}</dd>
                 </div>
               )}
             </dl>

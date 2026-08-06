@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminShowNav } from "@/components/admin-show-nav";
+import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   evaluateShowReadiness,
@@ -16,6 +17,7 @@ export default async function AdminShowPage({
 }: {
   params: Promise<{ showId: string }>;
 }) {
+  await requireAdmin();
   const { showId } = await params;
   const show = await db.show.findUnique({
     where: { slug: showId },

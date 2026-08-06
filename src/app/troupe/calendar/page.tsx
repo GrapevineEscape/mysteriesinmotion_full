@@ -38,9 +38,13 @@ export default async function TroupeCalendarPage() {
   for (const showDate of showDates) {
     const seat = showDate.assignments[0];
     const yourRole = seat
-      ? seat.status === "OFFERED"
-        ? `${seat.role.name} (offer pending)`
-        : seat.role.name
+      ? {
+          label: "Your role",
+          value:
+            seat.status === "OFFERED"
+              ? `${seat.role.name} (offer pending)`
+              : seat.role.name,
+        }
       : null;
 
     events.push({
@@ -52,7 +56,7 @@ export default async function TroupeCalendarPage() {
       when: formatDateTime(showDate.date),
       location: showDate.location ?? "—",
       statusLabel: SHOW_DATE_STATUS_LABELS[showDate.status],
-      yourRole,
+      detail: yourRole,
       notes: null,
       castingHref: isCastingOpen(showDate)
         ? `/troupe/casting/${showDate.id}`
@@ -69,7 +73,7 @@ export default async function TroupeCalendarPage() {
         when: formatDateTime(rehearsal.date),
         location: rehearsal.location,
         statusLabel: "Rehearsal",
-        yourRole,
+        detail: yourRole,
         notes: rehearsal.notes,
         castingHref: null,
       });

@@ -24,7 +24,7 @@ const GATED_MARKETING = [/^\/$/, /^\/about$/, /^\/shows(\/|$)/, /^\/book$/];
 const APEX_ONLY = [/^\/admin(\/|$)/, /^\/troupe(\/|$)/];
 
 /** Signed-in areas that supply their own chrome. */
-const PORTAL = [/^\/troupe(\/|$)/];
+const PORTAL = [/^\/troupe(\/|$)/, /^\/admin(\/|$)/];
 
 function hostnameOf(request: NextRequest) {
   const header = request.headers.get("host") ?? "";
