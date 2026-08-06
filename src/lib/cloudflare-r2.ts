@@ -9,9 +9,15 @@ function r2Client() {
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
   if (!accountId || !accessKeyId || !secretAccessKey) return null;
 
+  // Buckets created in a jurisdiction (EU, FedRAMP) sit behind a hostname the
+  // account id alone cannot spell, so allow the endpoint to be stated outright.
+  const endpoint =
+    process.env.R2_ENDPOINT?.trim() ||
+    `https://${accountId}.r2.cloudflarestorage.com`;
+
   return new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    endpoint,
     credentials: { accessKeyId, secretAccessKey },
   });
 }
