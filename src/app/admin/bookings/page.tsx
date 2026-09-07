@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { BookingStatus } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth";
-import { db } from "@/lib/db";
 import { formatDate } from "@/lib/app-time";
+import { BROADCAST_BOOKING_TITLE } from "@/lib/broadcast-facts";
+import { db } from "@/lib/db";
 import { formatUsPhone } from "@/lib/phone";
 import { confirmBooking, setBookingStatus } from "./actions";
 
@@ -48,9 +49,10 @@ export default async function BookingsPage({
       </header>
       <div className="portal-content">
         <p className="page-intro">
-          Inquiries from the website. Confirming one opens a draft performance with
-          the customer&rsquo;s date and party size already filled in, ready for you
-          to set the venue and cast it.
+          Inquiries from the website. Confirming a live show opens a draft
+          performance with the customer&rsquo;s date and party size already
+          filled in. {BROADCAST_BOOKING_TITLE} inquiries are marked confirmed
+          without scheduling a live performance.
         </p>
 
         <div className="portal-filter-bar">
@@ -97,9 +99,13 @@ export default async function BookingsPage({
                       {booking.message && <p>{booking.message}</p>}
                     </td>
                     <td>
-                      <Link href={`/shows/${booking.show.slug}`}>
-                        {booking.show.title}
-                      </Link>
+                      {booking.show ? (
+                        <Link href={`/shows/${booking.show.slug}`}>
+                          {booking.show.title}
+                        </Link>
+                      ) : (
+                        BROADCAST_BOOKING_TITLE
+                      )}
                     </td>
                     <td>{formatDate(booking.preferredDate)}</td>
                     <td>{booking.guestCount}</td>
@@ -125,7 +131,9 @@ export default async function BookingsPage({
                               className="button button-small button-primary"
                               type="submit"
                             >
-                              Confirm and schedule
+                              {booking.showId
+                                ? "Confirm and schedule"
+                                : "Confirm"}
                             </button>
                           </form>
                         )}

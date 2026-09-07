@@ -25,7 +25,7 @@ export default function ComingSoonPage() {
       </p>
       <p>
         Already part of the troupe?{" "}
-        <Link href="/sign-in">Sign in to the portal</Link>.
+        <Link href="/troupe/sign-in">Sign in to the portal</Link>.
       </p>
     </section>
   );

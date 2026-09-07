@@ -88,11 +88,32 @@ describe("host routing", () => {
     const response = proxy(request(APEX, "/mysteries"));
     assert.equal(redirectTarget(response), null);
   });
+
+  it("uses play chrome for play-only paths on a single host until DNS is attached", () => {
+    delete process.env.PUBLIC_PLAY_DOMAIN;
+    const host = "mysteries-in-motion.onrender.com";
+    for (const path of [
+      "/mysteries",
+      "/mysteries/missing-millions",
+      "/how-it-works",
+      "/my-cases",
+      "/play/demo",
+      "/sign-in",
+    ]) {
+      const response = proxy(request(host, path));
+      assert.equal(surfaceOf(response), "play", path);
+      assert.equal(redirectTarget(response), null, path);
+    }
+    assert.equal(surfaceOf(proxy(request(host, "/"))), "site");
+    assert.equal(surfaceOf(proxy(request(host, "/shows"))), "site");
+    assert.equal(surfaceOf(proxy(request(host, "/broadcast"))), "site");
+    assert.equal(surfaceOf(proxy(request(APEX, "/mysteries"))), "play");
+  });
 });
 
 describe("portal chrome", () => {
   it("marks the signed-in areas so they render their own sidebar", () => {
-    for (const path of ["/troupe", "/troupe/casting/abc", "/admin", "/admin/bookings"]) {
+    for (const path of ["/troupe", "/troupe/sign-in", "/troupe/casting/abc", "/admin", "/admin/bookings"]) {
       assert.equal(surfaceOf(proxy(request(APEX, path))), "portal", path);
     }
   });
@@ -106,7 +127,7 @@ describe("portal chrome", () => {
 describe("coming-soon gate", () => {
   it("holds back the marketing pages when enabled", () => {
     process.env.PUBLIC_COMING_SOON = "true";
-    for (const path of ["/", "/about", "/shows", "/shows/whodunnit", "/book"]) {
+    for (const path of ["/", "/about", "/shows", "/shows/whodunnit", "/book", "/broadcast"]) {
       const response = proxy(request(APEX, path));
       assert.equal(rewriteTarget(response), "/coming-soon", `expected ${path} to be gated`);
     }
@@ -114,7 +135,7 @@ describe("coming-soon gate", () => {
 
   it("leaves the troupe portal, administration, and sign-in reachable", () => {
     process.env.PUBLIC_COMING_SOON = "true";
-    for (const path of ["/troupe", "/troupe/casting", "/admin", "/sign-in"]) {
+    for (const path of ["/troupe", "/troupe/casting", "/admin", "/sign-in", "/troupe/sign-in"]) {
       const response = proxy(request(APEX, path));
       assert.equal(rewriteTarget(response), null, `expected ${path} to stay reachable`);
     }

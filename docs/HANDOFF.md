@@ -41,7 +41,7 @@ path (Phase A of cutover). The unified schema, auth, host routing, marketing,
 troupe portal, admin, Flask migrate/assets, and online content export/import are
 in place.
 
-- 84 tests pass (`npm test`). `npm run typecheck` and `npm run lint` are clean.
+- 97 tests pass (`npm test`). `npm run typecheck` and `npm run lint` are clean.
 - Local DB holds seed data, Flask troupe data, and the Online Mystery content pack.
 - **Inventory of live Online Mystery Postgres (read-only):** only
   **Missing Millions** is `PUBLISHED` with Case Room content (5 questions, 2
@@ -62,6 +62,11 @@ passwords anywhere. Flask's password hashes were deliberately left behind during
 migration rather than carried over, and the old `MIM2025` self-registration code
 is gone — performers now arrive through an admin-issued `TroupeInvite`. Do not
 reintroduce password authentication for "just the admins".
+
+Hosts who hire the company do not get accounts. They book by enquiry. Play
+customers sign in at `/sign-in`. Cast, directors, and administrators sign in at
+`/troupe/sign-in`. Same engine, two doors. Do not put a customer login on the
+hire site, and do not let the troupe door create a family account.
 
 **A director is not a role.** `UserRole` is only `CUSTOMER`, `PERFORMER`, and
 `ADMIN`. Someone is a director of a particular performance by way of
@@ -92,6 +97,17 @@ the play subdomain, injecting a surface header defined in `src/lib/surface.ts`.
 Import that constant from `src/lib/surface.ts`, never from `proxy.ts`, or the
 Edge runtime gets pulled into the server bundle. The session cookie is scoped to
 `.mysteriesinmotion.com` so one sign-in covers all three surfaces.
+
+Until `PUBLIC_PLAY_DOMAIN` is set, play-only paths (`/mysteries`, `/play`,
+`/how-it-works`, `/my-cases`) stay on the Render URL and still resolve to the
+play surface so the navigation can differ without custom DNS.
+
+**Two public doors are relationship, not format.** Mysteries in Motion is the
+company you hire. Play-at-home is a second product, not a second identity. The
+Broadcast is a hire offering (online, anywhere, up to 300 people, coming Fall
+2026) and must not be filed with the consumer Case Room. Escape mysteries are a
+live show style, not a third business. Do not put Live and Online on equal
+footing in the hire-site nav.
 
 **Times are resolved in the troupe's timezone, not the server's.** Use
 `src/lib/app-time.ts`. Flask stored timestamps without a zone, so the migration
@@ -167,7 +183,7 @@ enabling the security layer cannot unexpectedly break working shows.
 | --- | --- |
 | `node scripts/dev-database.mjs` | Start the local PGlite database |
 | `npm run dev` | Dev server |
-| `npm test` | Unit tests (84) |
+| `npm test` | Unit tests (97) |
 | `npm run typecheck` / `npm run lint` | Static checks |
 | `npm run db:counts` | Row counts, to see whether a database is empty, seeded, or migrated |
 | `npm run db:seed` | Seed demo data |

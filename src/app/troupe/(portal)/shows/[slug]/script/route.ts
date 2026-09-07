@@ -16,7 +16,7 @@ export async function GET(
   const user = await currentUser();
 
   if (!user || (user.role !== "PERFORMER" && user.role !== "ADMIN")) {
-    const signIn = new URL("/sign-in", request.url);
+    const signIn = new URL("/troupe/sign-in", request.url);
     signIn.searchParams.set("next", `/troupe/shows/${slug}`);
     return NextResponse.redirect(signIn, 303);
   }

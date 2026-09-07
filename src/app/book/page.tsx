@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BuyerFactsStrip } from "@/components/buyer-facts";
+import { HostTestimonials } from "@/components/host-testimonials";
+import { MysteryShowCard } from "@/components/mystery-show-card";
+import { SiteImage } from "@/components/site-image";
+import { SITE_IMAGE_SLOTS } from "@/lib/customer-images";
 import { db } from "@/lib/db";
+import { LIVE_EVENT_FACTS } from "@/lib/live-event-facts";
 import { LIVE_SHOW_TYPES } from "@/lib/show-types";
 import { BookingForm } from "./booking-form";
 
 export const metadata: Metadata = {
   title: "Book a Show",
   description:
-    "Host a private live interactive murder mystery at your venue in the Dallas and Fort Worth area.",
+    "Host a private live mystery at your DFW venue, or enquire about The Broadcast for an online group event.",
 };
 
 export const dynamic = "force-dynamic";
@@ -15,66 +21,90 @@ export const dynamic = "force-dynamic";
 const reasons = [
   {
     title: "Professional actors",
-    text: "Our talented local actors bring each character to life with engaging performances.",
+    text: "Local actors bring each character to life at your venue.",
   },
   {
-    title: "Interactive experience",
-    text: "Your guests become detectives, gathering clues and solving the mystery together.",
+    title: "Interactive evening",
+    text: "Guests become detectives, gather clues, and name the culprit.",
   },
   {
-    title: "Perfect for any event",
-    text: "Corporate events, birthday parties, team building, or any special occasion.",
+    title: "Any occasion",
+    text: "Corporate events, birthdays, team building, or celebrations.",
   },
   {
-    title: "We come to you",
-    text: "Host at your venue of choice anywhere in the Dallas and Fort Worth area.",
+    title: "We come to you — or we go online",
+    text: `Live shows in ${LIVE_EVENT_FACTS.geography}. The Broadcast is online, from anywhere, coming Fall 2026.`,
   },
 ];
 
-export default async function BookPage() {
+export default async function BookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ show?: string; format?: string }>;
+}) {
+  const { show: showSlug, format } = await searchParams;
+  const defaultFormat = format === "broadcast" ? "broadcast" : "live";
+
   const shows = await db.show.findMany({
     where: { type: { in: LIVE_SHOW_TYPES }, status: "PUBLISHED" },
     orderBy: { displayOrder: "asc" },
-    select: { id: true, title: true, slug: true, shortDescription: true },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      shortDescription: true,
+      type: true,
+      kidFriendly: true,
+      coverImageUrl: true,
+    },
   });
+
+  const defaultShowId =
+    shows.find((entry) => entry.slug === showSlug)?.id ?? "";
 
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-compact">
         <div className="hero-copy">
           <p className="eyebrow">Host a private show</p>
           <h1>Bring the mystery to your next event.</h1>
           <p className="hero-lead">
-            Tell us a little about your event and we will be in touch to confirm
-            availability and talk through the details.
+            Tell us about your event — a live show at your venue, or The
+            Broadcast for an online group. We typically reply within{" "}
+            {LIVE_EVENT_FACTS.replyWindow} to confirm availability and talk
+            through shows and rates.
           </p>
         </div>
       </section>
 
-      <section className="page-shell">
-        <div className="admin-dashboard-summary">
+      <section className="page-shell page-shell-tight">
+        <div className="book-trust-strip">
+          <SiteImage spec={SITE_IMAGE_SLOTS.bookTrust1} />
+          <SiteImage spec={SITE_IMAGE_SLOTS.bookTrust2} />
+          <p className="book-trust-note">
+            {LIVE_EVENT_FACTS.runtime} · {LIVE_EVENT_FACTS.guestRange} ·{" "}
+            {LIVE_EVENT_FACTS.geography}. {LIVE_EVENT_FACTS.rateBand}.
+          </p>
+        </div>
+
+        <BuyerFactsStrip />
+
+        <div className="book-reasons">
           {reasons.map((reason) => (
-            <div key={reason.title}>
-              <strong>{reason.title}</strong>
-              <span>{reason.text}</span>
-            </div>
+            <article key={reason.title}>
+              <h3>{reason.title}</h3>
+              <p>{reason.text}</p>
+            </article>
           ))}
         </div>
 
-        {shows.length ? (
-          <BookingForm shows={shows} />
-        ) : (
-          <div className="admin-empty-state">
-            <strong>Our catalog is being prepared</strong>
-            <p>
-              Email{" "}
-              <a href="mailto:info@mysteriesinmotion.com">
-                info@mysteriesinmotion.com
-              </a>{" "}
-              and we will talk you through what we can stage for your event.
-            </p>
-          </div>
-        )}
+        <BookingForm
+          defaultFormat={defaultFormat}
+          defaultShowId={defaultShowId}
+          shows={shows.map(({ id, title, slug }) => ({ id, title, slug }))}
+        />
+
+        <HostTestimonials />
 
         {shows.length > 0 && (
           <>
@@ -83,28 +113,21 @@ export default async function BookPage() {
             </div>
             <div className="case-grid">
               {shows.map((show) => (
-                <article className="mystery-card" key={show.id}>
-                  <div className="mystery-card-copy">
-                    <h3>{show.title}</h3>
-                    <p>{show.shortDescription}</p>
-                    <Link className="text-link" href={`/shows/${show.slug}`}>
-                      Learn more
-                    </Link>
-                  </div>
-                </article>
+                <MysteryShowCard key={show.id} show={show} cta="Learn more" />
               ))}
             </div>
           </>
         )}
 
-        <div className="admin-policy-note">
+        <div className="support-note">
           <strong>Have questions?</strong>
           <p>
-            Email us at{" "}
+            Email{" "}
             <a href="mailto:info@mysteriesinmotion.com">
               info@mysteriesinmotion.com
-            </a>{" "}
-            and we will get straight back to you.
+            </a>
+            . We typically reply within {LIVE_EVENT_FACTS.replyWindow}. Or{" "}
+            <Link href="/shows">browse the shows</Link> first.
           </p>
         </div>
       </section>

@@ -1,8 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import type { AuthAudience } from "@/lib/auth-audience";
 
-export function SignInForm({ nextPath }: { nextPath: string | null }) {
+export function SignInForm({
+  audience,
+  nextPath,
+}: {
+  audience: AuthAudience;
+  nextPath: string | null;
+}) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [displayName, setDisplayName] = useState("");
   const [needsName, setNeedsName] = useState(false);
@@ -18,7 +25,7 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
     const response = await fetch("/api/auth/request-code", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, audience }),
     });
     const result = (await response.json()) as { error?: string };
     setBusy(false);
@@ -37,7 +44,7 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
     const response = await fetch("/api/auth/verify-code", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ displayName, email, code, next: nextPath }),
+      body: JSON.stringify({ displayName, email, code, next: nextPath, audience }),
     });
     const result = (await response.json()) as {
       error?: string;
@@ -62,7 +69,9 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
         disabled={step === "code" || busy}
         id="email"
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="detective@example.com"
+        placeholder={
+          audience === "troupe" ? "you@mysteriesinmotion.com" : "you@example.com"
+        }
         required
         type="email"
         value={email}
@@ -91,7 +100,7 @@ export function SignInForm({ nextPath }: { nextPath: string | null }) {
             id="display-name"
             maxLength={100}
             onChange={(event) => setDisplayName(event.target.value)}
-            placeholder="Alex Detective"
+            placeholder={audience === "troupe" ? "Your name" : "Alex Detective"}
             required
             type="text"
             value={displayName}

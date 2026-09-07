@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Mysteries in Motion",
   },
   description:
-    "Live interactive murder mysteries for your event, and original online mysteries you play at home.",
+    "Mysteries in Motion brings interactive murder mysteries to your event — live in Dallas–Fort Worth, or online for a large group. You can also play a case at home."
 };
 
 export default async function RootLayout({

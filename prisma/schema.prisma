@@ -423,8 +423,8 @@ model Booking {
   name          String
   email         String
   phone         String
-  showId        String
-  show          Show          @relation(fields: [showId], references: [id], onDelete: Restrict)
+  showId        String?
+  show          Show?         @relation(fields: [showId], references: [id], onDelete: Restrict)
   preferredDate DateTime      @db.Date
   guestCount    Int
   message       String?

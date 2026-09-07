@@ -11,7 +11,10 @@ function form(overrides: Record<string, string> = {}) {
     showId: "show_1",
     preferredDate: "2026-10-31",
     guestCount: "24",
-    message: "Corporate event, 7pm start.",
+    venue: "Private home in Plano",
+    eventType: "Corporate",
+    format: "live",
+    message: "7pm start.",
     ...overrides,
   };
   for (const [key, value] of Object.entries(fields)) data.set(key, value);
@@ -19,14 +22,17 @@ function form(overrides: Record<string, string> = {}) {
 }
 
 describe("validateBookingInput", () => {
-  it("accepts a complete request and normalizes the phone number", () => {
+  it("accepts a complete request and folds venue into the message", () => {
     const result = validateBookingInput(form());
     assert.equal(result.ok, true);
     if (!result.ok) return;
     assert.equal(result.value.phone, "214-213-8719");
     assert.equal(result.value.name, "Dana Scully");
     assert.equal(result.value.guestCount, 24);
-    assert.equal(result.value.message, "Corporate event, 7pm start.");
+    assert.match(result.value.message!, /Format: Live at your venue/);
+    assert.match(result.value.message!, /Venue: Private home in Plano/);
+    assert.match(result.value.message!, /Event type: Corporate/);
+    assert.match(result.value.message!, /Notes: 7pm start\./);
   });
 
   it("keeps the preferred date on the day the customer chose", () => {
@@ -36,11 +42,12 @@ describe("validateBookingInput", () => {
     assert.equal(result.value.preferredDate.toISOString(), "2026-10-31T00:00:00.000Z");
   });
 
-  it("treats an omitted message as absent", () => {
+  it("still records venue when notes are omitted", () => {
     const result = validateBookingInput(form({ message: "   " }));
     assert.equal(result.ok, true);
     if (!result.ok) return;
-    assert.equal(result.value.message, null);
+    assert.match(result.value.message!, /Venue:/);
+    assert.doesNotMatch(result.value.message!, /Notes:/);
   });
 
   it("rejects a missing name", () => {
@@ -48,6 +55,13 @@ describe("validateBookingInput", () => {
     assert.equal(result.ok, false);
     if (result.ok) return;
     assert.ok(result.fieldErrors.name);
+  });
+
+  it("rejects a missing venue", () => {
+    const result = validateBookingInput(form({ venue: "  " }));
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.ok(result.fieldErrors.venue);
   });
 
   it("rejects a malformed email address", () => {
@@ -80,15 +94,66 @@ describe("validateBookingInput", () => {
 
   it("reports every problem at once rather than one at a time", () => {
     const result = validateBookingInput(
-      form({ name: "", email: "nope", phone: "12", guestCount: "0" }),
+      form({
+        name: "",
+        email: "nope",
+        phone: "12",
+        guestCount: "0",
+        venue: "",
+        eventType: "",
+      }),
     );
     assert.equal(result.ok, false);
     if (result.ok) return;
     assert.deepEqual(Object.keys(result.fieldErrors).sort(), [
       "email",
+      "eventType",
       "guestCount",
       "name",
       "phone",
+      "venue",
     ]);
+  });
+
+  it("accepts a Broadcast enquiry without a show or venue", () => {
+    const result = validateBookingInput(
+      form({
+        format: "broadcast",
+        showId: "",
+        venue: "",
+      }),
+    );
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.equal(result.value.showId, null);
+    assert.match(result.value.message!, /Format: The Broadcast/);
+    assert.match(result.value.message!, /Venue: online \/ none/);
+  });
+
+  it("still records an optional company location on a Broadcast enquiry", () => {
+    const result = validateBookingInput(
+      form({
+        format: "broadcast",
+        showId: "",
+        venue: "Nationwide remote team",
+      }),
+    );
+    assert.equal(result.ok, true);
+    if (!result.ok) return;
+    assert.match(result.value.message!, /Venue: Nationwide remote team/);
+  });
+
+  it("rejects a live request that is missing a show", () => {
+    const result = validateBookingInput(form({ showId: "" }));
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.ok(result.fieldErrors.showId);
+  });
+
+  it("rejects a request with no format", () => {
+    const result = validateBookingInput(form({ format: "" }));
+    assert.equal(result.ok, false);
+    if (result.ok) return;
+    assert.ok(result.fieldErrors.format);
   });
 });

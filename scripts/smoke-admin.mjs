@@ -91,7 +91,10 @@ const PATHS = [
   "/about",
   "/shows",
   "/book",
+  "/broadcast",
   "/mysteries",
+  "/sign-in",
+  "/troupe/sign-in",
 ];
 
 const session = await signIn();

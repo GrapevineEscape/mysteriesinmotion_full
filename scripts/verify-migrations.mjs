@@ -138,6 +138,16 @@ async function main() {
     check(`table ${name}`, present.has(name));
   }
 
+  const bookingShowId = await db.query(
+    `SELECT is_nullable FROM information_schema.columns
+     WHERE table_name = 'Booking' AND column_name = 'showId';`,
+  );
+  check(
+    "Booking.showId is optional for Broadcast enquiries",
+    bookingShowId.rows[0]?.is_nullable === "YES",
+    String(bookingShowId.rows[0]?.is_nullable),
+  );
+
   console.log("\nVerifying PERFORMER role is usable:");
   await db.exec(
     `INSERT INTO "User" ("id","email","role","updatedAt") VALUES ('u_perf','perf@example.com','PERFORMER',CURRENT_TIMESTAMP);`,

@@ -1,10 +1,14 @@
+import { BROADCAST_BOOKING_TITLE } from "@/lib/broadcast-facts";
 import { InvalidPhoneError, normalizeUsPhone } from "@/lib/phone";
+
+export const BOOKING_FORMATS = ["live", "broadcast"] as const;
+export type BookingFormat = (typeof BOOKING_FORMATS)[number];
 
 export type BookingInput = {
   name: string;
   email: string;
   phone: string;
-  showId: string;
+  showId: string | null;
   preferredDate: Date;
   guestCount: number;
   message: string | null;
@@ -19,6 +23,10 @@ function readText(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function isBookingFormat(value: string): value is BookingFormat {
+  return value === "live" || value === "broadcast";
+}
+
 export function validateBookingInput(formData: FormData): BookingValidation {
   const fieldErrors: Record<string, string> = {};
 
@@ -27,7 +35,10 @@ export function validateBookingInput(formData: FormData): BookingValidation {
   const showId = readText(formData, "showId");
   const preferredDateRaw = readText(formData, "preferredDate");
   const guestCountRaw = readText(formData, "guestCount");
-  const message = readText(formData, "message");
+  const venue = readText(formData, "venue");
+  const eventType = readText(formData, "eventType");
+  const notes = readText(formData, "message");
+  const formatRaw = readText(formData, "format");
 
   if (!name) {
     fieldErrors.name = "Enter your name.";
@@ -50,7 +61,30 @@ export function validateBookingInput(formData: FormData): BookingValidation {
         : "Enter a valid phone number.";
   }
 
-  if (!showId) fieldErrors.showId = "Choose a show.";
+  if (!isBookingFormat(formatRaw)) {
+    fieldErrors.format = "Choose live at your venue or The Broadcast.";
+  }
+
+  const format: BookingFormat | null = isBookingFormat(formatRaw)
+    ? formatRaw
+    : null;
+  const isBroadcast = format === "broadcast";
+
+  if (!isBroadcast && !showId) fieldErrors.showId = "Choose a show.";
+
+  if (!isBroadcast) {
+    if (!venue) {
+      fieldErrors.venue = "Enter a venue or city.";
+    } else if (venue.length > 200) {
+      fieldErrors.venue = "Venue is limited to 200 characters.";
+    }
+  } else if (venue.length > 200) {
+    fieldErrors.venue = "Venue is limited to 200 characters.";
+  }
+
+  if (!eventType) {
+    fieldErrors.eventType = "Choose an event type.";
+  }
 
   // A preferred date is a plain calendar day, so it is anchored to UTC rather
   // than the server's zone, which would otherwise shift it by a day.
@@ -68,16 +102,23 @@ export function validateBookingInput(formData: FormData): BookingValidation {
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
 
+  const messageParts = [
+    `Format: ${isBroadcast ? BROADCAST_BOOKING_TITLE : "Live at your venue"}`,
+    venue ? `Venue: ${venue}` : isBroadcast ? "Venue: online / none" : null,
+    `Event type: ${eventType}`,
+    notes ? `Notes: ${notes}` : null,
+  ].filter(Boolean);
+
   return {
     ok: true,
     value: {
       name,
       email,
       phone: phone!,
-      showId,
+      showId: isBroadcast ? null : showId,
       preferredDate: preferredDate!,
       guestCount,
-      message: message || null,
+      message: messageParts.join("\n"),
     },
   };
 }

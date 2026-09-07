@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BuyerFactsStrip } from "@/components/buyer-facts";
+import { MysteryShowCard } from "@/components/mystery-show-card";
 import { db } from "@/lib/db";
 import { LIVE_SHOW_TYPES } from "@/lib/show-types";
 
 export const metadata: Metadata = {
   title: "Our Shows",
   description:
-    "Choose from our collection of live interactive mystery shows for your next event.",
+    "Choose from our collection of live interactive mystery shows for your next event in Dallas–Fort Worth.",
 };
 
 export const dynamic = "force-dynamic";
@@ -20,7 +22,7 @@ export default async function ShowsPage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-compact">
         <div className="hero-copy">
           <p className="eyebrow">Our mystery shows</p>
           <h1>Choose the case for your event.</h1>
@@ -31,34 +33,28 @@ export default async function ShowsPage() {
         </div>
       </section>
 
-      <section className="page-shell">
+      <section className="page-shell page-shell-tight">
+        <BuyerFactsStrip compact />
+
         <div className="case-grid">
           {shows.map((show) => (
-            <article className="mystery-card" key={show.slug}>
-              <div className="mystery-card-copy">
-                <p className="card-kicker">
-                  {show.type === "ESCAPE" ? "Escape mystery" : "Live mystery"}
-                  {show.kidFriendly ? " · Family friendly" : ""}
-                </p>
-                <h2>{show.title}</h2>
-                <p>{show.shortDescription}</p>
-                <p className="card-kicker">
-                  {show._count.roles}{" "}
-                  {show._count.roles === 1 ? "character" : "characters"}
-                </p>
-                <Link
-                  className="button button-primary"
-                  href={`/shows/${show.slug}`}
-                >
-                  View details
-                </Link>
-              </div>
-            </article>
+            <MysteryShowCard
+              key={show.slug}
+              show={{
+                slug: show.slug,
+                title: show.title,
+                shortDescription: show.shortDescription,
+                type: show.type,
+                kidFriendly: show.kidFriendly,
+                coverImageUrl: show.coverImageUrl,
+                characterCount: show._count.roles,
+              }}
+            />
           ))}
         </div>
 
         {!shows.length && (
-          <div className="admin-empty-state">
+          <div className="empty-state">
             <strong>Our catalog is being prepared</strong>
             <p>
               Please <Link href="/book">get in touch</Link> and we will talk you

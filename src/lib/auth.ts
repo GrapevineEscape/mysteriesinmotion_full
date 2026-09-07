@@ -3,6 +3,9 @@ import type { UserRole } from "@prisma/client";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import type { AuthAudience } from "@/lib/auth-audience";
+
+export type { AuthAudience } from "@/lib/auth-audience";
 
 export const SESSION_COOKIE = "mim_session";
 const SESSION_DAYS = 30;
@@ -68,11 +71,62 @@ export async function isNewAccount(emailInput: string) {
   return !existing;
 }
 
-/** Where each audience lands when no specific destination was requested. */
-export function defaultLandingPath(role: UserRole) {
+const TROUPE_PATH = /^\/(troupe|admin)(\/|$)/;
+
+export function isTroupeReturnPath(value: string | null | undefined) {
+  return Boolean(optionalReturnPath(value) && TROUPE_PATH.test(value!));
+}
+
+export function signInHref(
+  audience: AuthAudience,
+  returnPath?: string | null,
+) {
+  const path = audience === "troupe" ? "/troupe/sign-in" : "/sign-in";
+  const next = optionalReturnPath(returnPath);
+  if (!next) return path;
+  return `${path}?next=${encodeURIComponent(next)}`;
+}
+
+/**
+ * Play sign-in always returns to the case files. Troupe sign-in returns staff
+ * to the portal. A performer who signs in on the play door is playing, not
+ * reporting for work.
+ */
+export function defaultLandingPath(
+  role: UserRole,
+  audience: AuthAudience = "play",
+) {
+  if (audience === "play") return "/my-cases";
   if (role === "ADMIN") return "/admin";
   if (role === "PERFORMER") return "/troupe";
   return "/my-cases";
+}
+
+/**
+ * Cast and staff only. A family playing a case is not admitted through this
+ * door, even if they already have a customer account.
+ */
+export async function isTroupeEligible(emailInput: string) {
+  const email = normalizeEmail(emailInput);
+  if (!email) return false;
+  if (email === normalizeEmail(process.env.ADMIN_EMAIL ?? "")) return true;
+
+  const [user, invite] = await Promise.all([
+    db.user.findUnique({
+      where: { email },
+      select: { role: true },
+    }),
+    db.troupeInvite.findFirst({
+      where: {
+        email,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: { id: true },
+    }),
+  ]);
+
+  return user?.role === "PERFORMER" || user?.role === "ADMIN" || Boolean(invite);
 }
 
 /** Returns the requested path only if it is a safe same-origin destination. */
@@ -267,19 +321,20 @@ export async function currentUser() {
   return session.user;
 }
 
-export async function requireUser(returnPath = "/my-cases") {
+export async function requireUser(
+  returnPath = "/my-cases",
+  audience: AuthAudience = "play",
+) {
   const user = await currentUser();
   if (!user) {
-    redirect(
-      `/sign-in?next=${encodeURIComponent(safeReturnPath(returnPath, returnPath))}`,
-    );
+    redirect(signInHref(audience, safeReturnPath(returnPath, returnPath)));
   }
   return user;
 }
 
 export async function requireAdmin() {
-  const user = await requireUser("/admin");
-  if (user.role !== "ADMIN") redirect(defaultLandingPath(user.role));
+  const user = await requireUser("/admin", "troupe");
+  if (user.role !== "ADMIN") redirect(defaultLandingPath(user.role, "troupe"));
   return user;
 }
 
@@ -288,9 +343,9 @@ export async function requireAdmin() {
  * they can see exactly what performers see.
  */
 export async function requireTroupe(returnPath = "/troupe") {
-  const user = await requireUser(returnPath);
+  const user = await requireUser(returnPath, "troupe");
   if (user.role !== "PERFORMER" && user.role !== "ADMIN") {
-    redirect(defaultLandingPath(user.role));
+    redirect(defaultLandingPath(user.role, "troupe"));
   }
   return user;
 }

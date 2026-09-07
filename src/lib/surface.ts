@@ -3,9 +3,11 @@
  * passed to the app as a request header so server components can render the
  * right navigation without duplicating layouts per route group.
  *
- * "play" and "site" are the two public hostnames. "portal" covers the signed-in
- * troupe area, which brings its own sidebar and suppresses the marketing
- * header and footer.
+ * "play" and "site" are the two public doors (hire vs play-at-home). They map
+ * to separate hostnames once DNS is attached; until then, play-only paths on
+ * the Render URL still resolve to "play" so the chrome can differ. "portal"
+ * covers the signed-in troupe area, which brings its own sidebar and
+ * suppresses the marketing header and footer.
  */
 export type Surface = "play" | "site" | "portal";
 

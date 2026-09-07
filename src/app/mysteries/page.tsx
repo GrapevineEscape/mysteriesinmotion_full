@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ImageSlot } from "@/components/image-slot";
+import { SiteImage } from "@/components/site-image";
+import { SITE_IMAGE_SLOTS, showCoverSpec } from "@/lib/customer-images";
+import { resolveShowCover } from "@/lib/resolve-customer-image";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: "Mysteries",
+  title: "Play at home",
+  description:
+    "Interactive mysteries you play at home — watch, accuse, and earn your detective rank.",
 };
 
 export const dynamic = "force-dynamic";
@@ -35,7 +41,7 @@ export default async function MysteriesPage() {
 
   return (
     <>
-      <section className="hero">
+      <section className="hero hero-with-media">
         <div className="hero-copy">
           <p className="eyebrow">Interactive mysteries you play at home</p>
           <h1>
@@ -63,9 +69,10 @@ export default async function MysteriesPage() {
             </li>
             <li>
               <strong>
-                {mysteries.length} {mysteries.length === 1 ? "mystery" : "mysteries"}
+                {mysteries.length}{" "}
+                {mysteries.length === 1 ? "mystery" : "mysteries"}
               </strong>
-              <span>More cases ahead</span>
+              <span>Play when you are ready</span>
             </li>
             <li>
               <strong>Your verdict</strong>
@@ -73,23 +80,11 @@ export default async function MysteriesPage() {
             </li>
           </ul>
         </div>
-        <div className="case-file" aria-label="Confidential case file preview">
-          <div className="case-file-tab">Case file 001</div>
-          <div className="case-stamp">Confidential</div>
-          <div className="case-photo">
-            <span className="photo-silhouette" aria-hidden="true" />
-            <p>Identity withheld</p>
-          </div>
-          <div className="case-lines">
-            <span />
-            <span />
-            <span />
-          </div>
-          <p className="case-note">
-            The evidence is ready.
-            <br />
-            Are you?
-          </p>
+        <div className="hero-media">
+          <SiteImage
+            spec={SITE_IMAGE_SLOTS.onlineHero}
+            alt="Online mystery Case Room"
+          />
         </div>
       </section>
 
@@ -107,9 +102,15 @@ export default async function MysteriesPage() {
             </article>
           ))}
         </div>
+        <p className="bridge-note">
+          Planning an event instead?{" "}
+          <Link className="text-link" href="/">
+            Host a mystery with us
+          </Link>
+        </p>
       </section>
 
-      <section className="page-shell" id="case-board">
+      <section className="page-shell page-shell-tight" id="case-board">
         <p className="eyebrow">The case board</p>
         <h2>Choose your mystery.</h2>
         <p className="page-intro">
@@ -117,17 +118,24 @@ export default async function MysteriesPage() {
         </p>
         <div className="case-grid">
           {mysteries.map((mystery) => (
-            <article className="mystery-card placeholder-card" key={mystery.slug}>
-              <div className="mystery-art">
-                <span>Case {String(mystery.displayOrder).padStart(2, "0")}</span>
-                <strong>Classified</strong>
+            <article className="mystery-card" key={mystery.slug}>
+              <div className="mystery-card-media">
+                <ImageSlot
+                  fill
+                  candidates={[
+                    resolveShowCover(mystery.slug, mystery.coverImageUrl),
+                  ]}
+                  spec={showCoverSpec(mystery.slug, mystery.title)}
+                  alt={`${mystery.title} cover`}
+                />
               </div>
               <div className="mystery-card-copy">
                 <p className="card-kicker">
-                  ${((mystery.online?.priceCents ?? 0) / 100).toFixed(2)} per show
+                  ${((mystery.online?.priceCents ?? 0) / 100).toFixed(2)} per
+                  show · Play at home
                 </p>
                 <h3>{mystery.title}</h3>
-                <p>{mystery.fullDescription}</p>
+                <p>{mystery.shortDescription}</p>
                 <Link
                   className="button button-primary"
                   href={`/mysteries/${mystery.slug}`}

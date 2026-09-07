@@ -7,8 +7,10 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 /**
- * Confirming an enquiry starts a draft performance from it, so the customer's
- * date and venue carry straight into the setup wizard instead of being retyped.
+ * Confirming a live enquiry starts a draft performance from it, so the
+ * customer's date and party size carry into the setup wizard. Broadcast
+ * enquiries have no live catalog title, so they are marked confirmed without
+ * opening a ShowDate.
  */
 export async function confirmBooking(formData: FormData) {
   await requireAdmin();
@@ -17,18 +19,24 @@ export async function confirmBooking(formData: FormData) {
   const booking = await db.booking.findUnique({ where: { id } });
   if (!booking) redirect("/admin/bookings");
 
+  if (!booking.showId) {
+    await db.booking.update({ where: { id }, data: { status: "CONFIRMED" } });
+    revalidatePath("/admin/bookings");
+    redirect("/admin/bookings?status=CONFIRMED");
+  }
+
   const showDate = await db.$transaction(async (tx) => {
     await tx.booking.update({ where: { id }, data: { status: "CONFIRMED" } });
 
     const existing = await tx.showDate.findFirst({
-      where: { showId: booking.showId, customer: booking.name, status: "DRAFT" },
+      where: { showId: booking.showId!, customer: booking.name, status: "DRAFT" },
       select: { id: true },
     });
     if (existing) return existing;
 
     return tx.showDate.create({
       data: {
-        showId: booking.showId,
+        showId: booking.showId!,
         date: booking.preferredDate,
         customer: booking.name,
         attendees: booking.guestCount,

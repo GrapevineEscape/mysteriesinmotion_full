@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ImageSlot } from "@/components/image-slot";
+import { showCoverSpec } from "@/lib/customer-images";
+import { resolveShowCover } from "@/lib/resolve-customer-image";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { canStartNewGame, gameCanContinue } from "@/lib/entitlements";
@@ -73,11 +76,25 @@ export default async function MysteryDetailPage({
 
   return (
     <section className="page-shell narrow-shell">
+      <div className="online-detail-media">
+        <ImageSlot
+          fill
+          candidates={[resolveShowCover(show.slug, show.coverImageUrl)]}
+          spec={showCoverSpec(show.slug, show.title)}
+          alt={`${show.title} cover`}
+        />
+      </div>
       <p className="eyebrow">Original online mystery</p>
       <h1>{show.title}</h1>
       <p className="page-intro">{show.fullDescription}</p>
       <p className="card-kicker">
         ${(show.online.priceCents / 100).toFixed(2)} per show
+      </p>
+      <p className="bridge-note">
+        Planning an event instead?{" "}
+        <Link className="text-link" href="/">
+          Host a mystery with us
+        </Link>
       </p>
       {access === "required" && (
         <p role="alert">This mystery must be purchased before it can be played.</p>

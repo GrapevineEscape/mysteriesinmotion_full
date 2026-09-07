@@ -26,7 +26,7 @@ export async function inviteTroupeMember(formData: FormData) {
 
   await sendTroupeInvite({
     email: invite.email,
-    signInUrl: `${appUrl()}/sign-in?next=${encodeURIComponent("/troupe")}`,
+    signInUrl: `${appUrl()}/troupe/sign-in?next=${encodeURIComponent("/troupe")}`,
     expiresAt: invite.expiresAt,
   });
 

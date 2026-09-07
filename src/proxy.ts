@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SURFACE_HEADER, type Surface } from "@/lib/surface";
 
 /**
- * One deployment serves two hostnames. The apex carries the marketing site,
- * the troupe portal, and administration; the play subdomain carries the online
- * mystery catalog and Case Room.
+ * One deployment serves two customer doors. The hire site is the company
+ * people book; the play catalog is mysteries they start at home. Those doors
+ * become separate hostnames once DNS is attached. Until PUBLIC_PLAY_DOMAIN is
+ * set, both live on the same Render URL and play-only paths still get play
+ * chrome so the navigation does not treat them as equal siblings.
  *
  * Rather than duplicate layouts per route group, the surface is resolved here
  * and passed to the app as a request header so the shared layout can render the
@@ -14,11 +16,23 @@ import { SURFACE_HEADER, type Surface } from "@/lib/surface";
 
 const PLAY_LANDING = "/mysteries";
 
-/** Paths that belong exclusively to the play subdomain. */
-const PLAY_ONLY = [/^\/mysteries(\/|$)/, /^\/play(\/|$)/, /^\/my-cases$/, /^\/how-it-works$/];
+/** Paths that belong exclusively to the play door. */
+const PLAY_ONLY = [
+  /^\/mysteries(\/|$)/,
+  /^\/play(\/|$)/,
+  /^\/my-cases$/,
+  /^\/how-it-works$/,
+  /^\/sign-in$/,
+];
 
 /** Paths the coming-soon gate holds back. Everything else stays reachable. */
-const GATED_MARKETING = [/^\/$/, /^\/about$/, /^\/shows(\/|$)/, /^\/book$/];
+const GATED_MARKETING = [
+  /^\/$/,
+  /^\/about$/,
+  /^\/shows(\/|$)/,
+  /^\/book$/,
+  /^\/broadcast$/,
+];
 
 /** Paths that only make sense on the apex. */
 const APEX_ONLY = [/^\/admin(\/|$)/, /^\/troupe(\/|$)/];
@@ -51,11 +65,14 @@ function withSurface(request: NextRequest, surface: Surface) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = hostnameOf(request);
+  const playDomain = process.env.PUBLIC_PLAY_DOMAIN?.trim();
   const surface: Surface = isPlayHost(hostname)
     ? "play"
     : matches(PORTAL, pathname)
       ? "portal"
-      : "site";
+      : !playDomain && matches(PLAY_ONLY, pathname)
+        ? "play"
+        : "site";
   const headers = withSurface(request, surface);
 
   if (surface === "play") {
@@ -83,7 +100,6 @@ export function proxy(request: NextRequest) {
 
   // Keep the online catalog on its own hostname once that domain is live, so
   // the two surfaces do not serve duplicate content.
-  const playDomain = process.env.PUBLIC_PLAY_DOMAIN?.trim();
   if (playDomain && matches(PLAY_ONLY, pathname)) {
     const target = new URL(request.nextUrl);
     target.hostname = playDomain;
