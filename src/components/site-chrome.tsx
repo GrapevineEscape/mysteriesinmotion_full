@@ -140,8 +140,6 @@ export function SiteFooter({
   surface: PublicSurface;
   holding?: boolean;
 }) {
-  if (holding) return null;
-
   return (
     <footer className="site-footer">
       <div>
@@ -162,6 +160,7 @@ export function SiteFooter({
           </a>
         </p>
       </div>
+      {holding ? null : (
       <div className="footer-links">
         {surface === "play" ? (
           <>
@@ -186,6 +185,7 @@ export function SiteFooter({
         <Link href="/refund-policy">Refunds</Link>
         <Link href="/support">Support</Link>
       </div>
+      )}
     </footer>
   );
 }
