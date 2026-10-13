@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
-import { SURFACE_HEADER, surfaceFromHeader } from "@/lib/surface";
+import { HOLDING_HEADER, SURFACE_HEADER, surfaceFromHeader } from "@/lib/surface";
 import "./globals.css";
 import "@/styles/portal.css";
 
@@ -21,6 +21,7 @@ export default async function RootLayout({
 }>) {
   const requestHeaders = await headers();
   const surface = surfaceFromHeader(requestHeaders.get(SURFACE_HEADER));
+  const holding = requestHeaders.get(HOLDING_HEADER) === "1";
 
   // The troupe portal supplies its own sidebar shell.
   if (surface === "portal") {
@@ -34,9 +35,9 @@ export default async function RootLayout({
   return (
     <html data-surface={surface} lang="en">
       <body>
-        <SiteHeader surface={surface} />
+        <SiteHeader surface={surface} holding={holding} />
         <main>{children}</main>
-        <SiteFooter surface={surface} />
+        <SiteFooter surface={surface} holding={holding} />
       </body>
     </html>
   );

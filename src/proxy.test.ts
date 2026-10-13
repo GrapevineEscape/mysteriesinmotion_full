@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { NextRequest } from "next/server";
 import { proxy } from "./proxy";
-import { SURFACE_HEADER } from "./lib/surface";
+import { HOLDING_HEADER, SURFACE_HEADER } from "./lib/surface";
 
 const APEX = "mysteriesinmotion.com";
 const PLAY = "play.mysteriesinmotion.com";
@@ -130,6 +130,11 @@ describe("coming-soon gate", () => {
     for (const path of ["/", "/about", "/shows", "/shows/whodunnit", "/book", "/broadcast"]) {
       const response = proxy(request(APEX, path));
       assert.equal(rewriteTarget(response), "/coming-soon", `expected ${path} to be gated`);
+      assert.equal(
+        response.headers.get("x-middleware-request-" + HOLDING_HEADER),
+        "1",
+        `expected ${path} to render the holding page`,
+      );
     }
   });
 

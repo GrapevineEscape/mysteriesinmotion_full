@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SURFACE_HEADER, type Surface } from "@/lib/surface";
+import { HOLDING_HEADER, SURFACE_HEADER, type Surface } from "@/lib/surface";
 
 /**
  * One deployment serves two customer doors. The hire site is the company
@@ -113,6 +113,7 @@ export function proxy(request: NextRequest) {
     process.env.PUBLIC_COMING_SOON === "true" &&
     matches(GATED_MARKETING, pathname)
   ) {
+    headers.set(HOLDING_HEADER, "1");
     const target = request.nextUrl.clone();
     target.pathname = "/coming-soon";
     return NextResponse.rewrite(target, { request: { headers } });

@@ -16,6 +16,9 @@ export type PublicSurface = Exclude<Surface, "portal">;
 
 export const SURFACE_HEADER = "x-mim-surface";
 
+/** Set by the proxy when a marketing page is being shown as the holding page. */
+export const HOLDING_HEADER = "x-mim-holding";
+
 export function surfaceFromHeader(value: string | null | undefined): Surface {
   if (value === "play") return "play";
   if (value === "portal") return "portal";

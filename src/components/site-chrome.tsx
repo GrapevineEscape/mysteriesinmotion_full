@@ -70,7 +70,13 @@ function NavLinks({
   );
 }
 
-export function SiteHeader({ surface }: { surface: PublicSurface }) {
+export function SiteHeader({
+  surface,
+  holding = false,
+}: {
+  surface: PublicSurface;
+  holding?: boolean;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -82,9 +88,12 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
         </span>
         <span>{BRAND}</span>
       </Link>
-      <nav className="site-nav-desktop" aria-label="Main navigation">
-        <NavLinks surface={surface} pathname={pathname} />
-      </nav>
+      {holding ? null : (
+        <nav className="site-nav-desktop" aria-label="Main navigation">
+          <NavLinks surface={surface} pathname={pathname} />
+        </nav>
+      )}
+      {holding ? null : (
       <div className="site-header-actions">
         {surface === "play" && (
           <Link
@@ -105,7 +114,8 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
           <span aria-hidden="true">{open ? "✕" : "Menu"}</span>
         </button>
       </div>
-      {open && (
+      )}
+      {open && !holding && (
         <nav
           id="mobile-nav"
           className="site-nav-mobile"
@@ -123,7 +133,15 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
   );
 }
 
-export function SiteFooter({ surface }: { surface: PublicSurface }) {
+export function SiteFooter({
+  surface,
+  holding = false,
+}: {
+  surface: PublicSurface;
+  holding?: boolean;
+}) {
+  if (holding) return null;
+
   return (
     <footer className="site-footer">
       <div>
