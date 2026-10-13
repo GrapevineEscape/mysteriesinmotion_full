@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const HOLDING_EMAIL = "russell@thegrapevineescape.com";
+const HOLDING_EMAIL = "info@mysteriesinmotion.com";
 
 export const metadata: Metadata = {
   title: "Mysteries in Motion",
