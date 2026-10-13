@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ShowAccessPicker } from "@/components/admin/show-access-picker";
 import { inviteTroupeMember } from "./actions";
 
 export function InviteTroupeForm({
@@ -9,18 +10,6 @@ export function InviteTroupeForm({
   shows: { id: string; title: string }[];
 }) {
   const [role, setRole] = useState("PERFORMER");
-  const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(shows.map((show) => show.id)),
-  );
-
-  function toggle(id: string) {
-    setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
 
   return (
     <form action={inviteTroupeMember} className="admin-panel">
@@ -53,49 +42,12 @@ export function InviteTroupeForm({
         </label>
       </div>
       {role === "PERFORMER" && (
-        <fieldset className="invite-shows">
-          <legend>Shows this performer can see</legend>
-          <p>
-            Checked shows are the only ones available after they accept.
-            Administrators can see every show.
-          </p>
-          <div className="button-row">
-            <button
-              className="button button-small button-ghost"
-              type="button"
-              onClick={() => setSelected(new Set(shows.map((show) => show.id)))}
-            >
-              Select all
-            </button>
-            <button
-              className="button button-small button-ghost"
-              type="button"
-              onClick={() => setSelected(new Set())}
-            >
-              Clear all
-            </button>
-          </div>
-          {shows.length ? (
-            <ul>
-              {shows.map((show) => (
-                <li key={show.id}>
-                  <label>
-                    <input
-                      checked={selected.has(show.id)}
-                      name="showId"
-                      type="checkbox"
-                      value={show.id}
-                      onChange={() => toggle(show.id)}
-                    />
-                    <span>{show.title}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No shows are in the catalog yet.</p>
-          )}
-        </fieldset>
+        <ShowAccessPicker
+          description="Checked shows are the only ones available after they accept. Administrators can see every show."
+          initialSelected={shows.map((show) => show.id)}
+          legend="Shows this performer can see"
+          shows={shows}
+        />
       )}
       <button className="button button-primary" type="submit">
         Send invitation

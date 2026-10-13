@@ -8,6 +8,7 @@ import { secureR2Reference } from "@/lib/cloudflare-r2";
 import { formatUsPhone } from "@/lib/phone";
 import { displayName } from "@/lib/people";
 import { SHOW_DATE_STATUS_LABELS } from "@/lib/show-date-lifecycle";
+import { PerformerShowAccessForm } from "../show-access-form";
 
 export const metadata: Metadata = { title: "Performer" };
 
@@ -43,6 +44,7 @@ export default async function PerformerDetailPage({
         include: { show: { select: { title: true } } },
         orderBy: { date: "desc" },
       },
+      showAccess: { select: { showId: true } },
     },
   });
   if (!performer) notFound();
@@ -66,7 +68,17 @@ export default async function PerformerDetailPage({
     );
   }
 
-  const headshotUrl = await secureR2Reference(performer.headshotUrl);
+  const [headshotUrl, shows] = await Promise.all([
+    secureR2Reference(performer.headshotUrl),
+    db.show.findMany({
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
+  ]);
+  const granted = new Set(performer.showAccess.map((access) => access.showId));
+  const initialSelected = performer.showAccessRestricted
+    ? shows.filter((show) => granted.has(show.id)).map((show) => show.id)
+    : shows.map((show) => show.id);
 
   return (
     <>
@@ -113,6 +125,15 @@ export default async function PerformerDetailPage({
             </div>
           )}
         </section>
+
+        {performer.role === "PERFORMER" && (
+          <PerformerShowAccessForm
+            initialSelected={initialSelected}
+            performerId={performer.id}
+            shows={shows}
+            unrestricted={!performer.showAccessRestricted}
+          />
+        )}
 
         <section className="portal-panel">
           <div className="portal-panel-heading">
