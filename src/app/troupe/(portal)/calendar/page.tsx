@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds } from "@/lib/show-access";
 import { appToday, formatDateTime } from "@/lib/app-time";
 import {
   applyAutoClose,
@@ -20,11 +21,15 @@ export const metadata: Metadata = { title: "Calendar" };
 export default async function TroupeCalendarPage() {
   const member = await requireTroupe();
   await applyAutoClose();
+  const allowed = await allowedShowIds(member);
 
   // Drafts are administration's business. Everything else is included so
   // browsing back through the year still shows what happened.
   const showDates = await db.showDate.findMany({
-    where: { status: { not: "DRAFT" } },
+    where: {
+      status: { not: "DRAFT" },
+      ...(allowed ? { showId: { in: allowed } } : {}),
+    },
     include: {
       show: true,
       rehearsals: { orderBy: { date: "asc" } },

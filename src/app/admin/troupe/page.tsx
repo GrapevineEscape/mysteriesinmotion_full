@@ -3,11 +3,8 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { pendingTroupeInvites } from "@/lib/troupe-invites";
-import {
-  cancelTroupeInvite,
-  changeMemberRole,
-  inviteTroupeMember,
-} from "./actions";
+import { InviteTroupeForm } from "./invite-form";
+import { cancelTroupeInvite, changeMemberRole } from "./actions";
 
 export const metadata: Metadata = { title: "Troupe Access" };
 
@@ -28,12 +25,16 @@ function memberName(member: {
 
 export default async function TroupeAccessPage() {
   await requireAdmin();
-  const [members, invites] = await Promise.all([
+  const [members, invites, shows] = await Promise.all([
     db.user.findMany({
       where: { role: { in: ["PERFORMER", "ADMIN"] } },
       orderBy: [{ role: "asc" }, { createdAt: "asc" }],
     }),
     pendingTroupeInvites(),
+    db.show.findMany({
+      orderBy: { title: "asc" },
+      select: { id: true, title: true },
+    }),
   ]);
 
   return (
@@ -51,35 +52,7 @@ export default async function TroupeAccessPage() {
         </Link>
       </div>
 
-      <form action={inviteTroupeMember} className="admin-panel">
-        <div className="admin-panel-heading">
-          <div>
-            <p className="card-kicker">New invitation</p>
-            <h2>Invite someone to the troupe</h2>
-          </div>
-        </div>
-        <div className="question-editor-grid">
-          <label>
-            <span>Email address</span>
-            <input
-              name="email"
-              placeholder="performer@example.com"
-              required
-              type="email"
-            />
-          </label>
-          <label>
-            <span>Access level</span>
-            <select defaultValue="PERFORMER" name="role">
-              <option value="PERFORMER">Performer</option>
-              <option value="ADMIN">Administrator</option>
-            </select>
-          </label>
-        </div>
-        <button className="button button-primary" type="submit">
-          Send invitation
-        </button>
-      </form>
+      <InviteTroupeForm shows={shows} />
 
       <div className="admin-panel">
         <div className="admin-panel-heading">
@@ -96,8 +69,10 @@ export default async function TroupeAccessPage() {
                 <div>
                   <h4>{invite.email}</h4>
                   <p>
-                    {invite.role === "ADMIN" ? "Administrator" : "Performer"} ·
-                    expires {adminDate.format(invite.expiresAt)}
+                    {invite.role === "ADMIN"
+                      ? "Administrator"
+                      : `Performer · ${invite.showIds.length} ${invite.showIds.length === 1 ? "show" : "shows"}`}{" "}
+                    · expires {adminDate.format(invite.expiresAt)}
                   </p>
                   <small>
                     Invited {adminDate.format(invite.createdAt)}

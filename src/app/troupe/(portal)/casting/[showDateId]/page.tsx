@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds, canSeeShow } from "@/lib/show-access";
 import { formatDateTime } from "@/lib/app-time";
 import { displayName } from "@/lib/people";
 import { seatState } from "@/lib/casting-rules";
@@ -33,6 +34,8 @@ export default async function CastingDateDetailPage({ params }: PageProps) {
     },
   });
   if (!showDate) notFound();
+  const allowed = await allowedShowIds(member);
+  if (!canSeeShow(allowed, showDate.showId)) redirect("/troupe/casting");
 
   // Casting closes the day after the performance, and a draft date is not yet
   // public, so there is nothing here for a performer to act on.

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds } from "@/lib/show-access";
 import { formatDateTime } from "@/lib/app-time";
 import {
   applyAutoClose,
@@ -14,9 +15,13 @@ export const metadata: Metadata = { title: "Show dates" };
 export default async function CastingDatesPage() {
   const member = await requireTroupe();
   await applyAutoClose();
+  const allowed = await allowedShowIds(member);
 
   const dates = await db.showDate.findMany({
-    where: castingOpenWhere(),
+    where: {
+      ...castingOpenWhere(),
+      ...(allowed ? { showId: { in: allowed } } : {}),
+    },
     include: {
       show: true,
       assignments: {

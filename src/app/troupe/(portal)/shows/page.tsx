@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ShowType } from "@prisma/client";
+import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds } from "@/lib/show-access";
 import { SHOW_TYPE_LABELS, isShowType } from "@/lib/show-types";
 
 export const metadata: Metadata = { title: "Shows" };
@@ -11,11 +13,16 @@ export default async function TroupeShowsPage({
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
+  const member = await requireTroupe();
   const { type } = await searchParams;
   const selectedType: ShowType | null = isShowType(type) ? type : null;
+  const allowed = await allowedShowIds(member);
 
   const shows = await db.show.findMany({
-    where: selectedType ? { type: selectedType } : undefined,
+    where: {
+      ...(selectedType ? { type: selectedType } : {}),
+      ...(allowed ? { id: { in: allowed } } : {}),
+    },
     orderBy: { title: "asc" },
     include: { _count: { select: { roles: true } } },
   });

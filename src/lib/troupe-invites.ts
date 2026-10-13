@@ -18,10 +18,12 @@ export async function createTroupeInvite({
   email: emailInput,
   role = "PERFORMER",
   createdById,
+  showIds = [],
 }: {
   email: string;
   role?: Extract<UserRole, "PERFORMER" | "ADMIN">;
   createdById?: string;
+  showIds?: string[];
 }) {
   const email = normalizeEmail(emailInput);
   if (!email.includes("@")) {
@@ -43,6 +45,7 @@ export async function createTroupeInvite({
         tokenHash: hashInviteToken(token),
         expiresAt,
         createdById,
+        showIds: role === "PERFORMER" ? showIds : [],
       },
     });
   });

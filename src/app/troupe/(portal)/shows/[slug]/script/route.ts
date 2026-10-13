@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds, canSeeShow } from "@/lib/show-access";
 import { secureR2Download } from "@/lib/cloudflare-r2";
 
 /**
@@ -23,10 +24,11 @@ export async function GET(
 
   const show = await db.show.findUnique({
     where: { slug },
-    select: { title: true, scriptUrl: true },
+    select: { id: true, title: true, scriptUrl: true },
   });
 
-  if (!show?.scriptUrl) {
+  const allowed = await allowedShowIds(user);
+  if (!show || !canSeeShow(allowed, show.id) || !show.scriptUrl) {
     return NextResponse.redirect(new URL("/troupe/shows", request.url), 303);
   }
 

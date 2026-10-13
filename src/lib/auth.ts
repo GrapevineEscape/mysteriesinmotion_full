@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import type { AuthAudience } from "@/lib/auth-audience";
+import { accessGrantForInvite } from "@/lib/show-access";
 
 export type { AuthAudience } from "@/lib/auth-audience";
 
@@ -257,20 +258,44 @@ export async function verifyLoginCode(
       select: { displayName: true },
     });
 
+    const grant =
+      invite && (grantedRole === "PERFORMER" || grantedRole === "ADMIN")
+        ? accessGrantForInvite(grantedRole, invite.showIds)
+        : null;
+
     const user = await transaction.user.upsert({
       where: { email },
       update: {
         emailVerifiedAt: new Date(),
         ...(displayName && !existing?.displayName ? { displayName } : {}),
         ...(grantedRole ? { role: grantedRole } : {}),
+        ...(grant ? { showAccessRestricted: grant.restricted } : {}),
       },
       create: {
         email,
         displayName,
         emailVerifiedAt: new Date(),
         role: grantedRole ?? "CUSTOMER",
+        showAccessRestricted: grant?.restricted ?? false,
       },
     });
+
+    if (grant) {
+      await transaction.performerShowAccess.deleteMany({
+        where: { userId: user.id },
+      });
+      const known = grant.showIds.length
+        ? await transaction.show.findMany({
+            where: { id: { in: grant.showIds } },
+            select: { id: true },
+          })
+        : [];
+      if (known.length) {
+        await transaction.performerShowAccess.createMany({
+          data: known.map((show) => ({ userId: user.id, showId: show.id })),
+        });
+      }
+    }
 
     if (invite) {
       await transaction.troupeInvite.update({

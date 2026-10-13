@@ -146,16 +146,34 @@ export function troupeInviteOpening(role: "PERFORMER" | "ADMIN") {
     : "You have been invited to join the Mysteries in Motion troupe portal.";
 }
 
+function inviteShowLine(role: "PERFORMER" | "ADMIN", showTitles: string[]) {
+  if (role !== "PERFORMER") return "";
+  if (!showTitles.length) {
+    return "<p>No shows have been assigned to you yet.</p>";
+  }
+  const titles = showTitles
+    .map((title) =>
+      title
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;"),
+    )
+    .join(", ");
+  return `<p>You will be able to see: ${titles}.</p>`;
+}
+
 export async function sendTroupeInvite({
   email,
   signInUrl,
   expiresAt,
   role = "PERFORMER",
+  showTitles = [],
 }: {
   email: string;
   signInUrl: string;
   expiresAt: Date;
   role?: "PERFORMER" | "ADMIN";
+  showTitles?: string[];
 }) {
   const expires = new Intl.DateTimeFormat("en-US", {
     dateStyle: "long",
@@ -168,6 +186,7 @@ export async function sendTroupeInvite({
     subject: "You have been invited to the Mysteries in Motion troupe",
     html: `
       <p>${troupeInviteOpening(role)}</p>
+      ${inviteShowLine(role, showTitles)}
       <p>There is no password. Enter your email address on the sign-in page and
       we will send you a six-digit code.</p>
       <p><a href="${signInUrl}">${signInUrl}</a></p>

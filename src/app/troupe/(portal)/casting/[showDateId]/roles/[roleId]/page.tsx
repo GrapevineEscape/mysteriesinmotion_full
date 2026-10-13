@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds, canSeeShow } from "@/lib/show-access";
 import { formatDateTime } from "@/lib/app-time";
 import { applyAutoClose, isCastingOpen } from "@/lib/show-date-lifecycle";
 import { saveApplication, withdrawApplication } from "../../actions";
@@ -23,6 +24,8 @@ export default async function CastingApplyPage({ params }: PageProps) {
     include: { show: true, rehearsals: { orderBy: { date: "asc" } } },
   });
   if (!showDate) notFound();
+  const allowed = await allowedShowIds(member);
+  if (!canSeeShow(allowed, showDate.showId)) redirect("/troupe/casting");
   if (!isCastingOpen(showDate)) redirect("/troupe/casting");
 
   const role = await db.role.findFirst({

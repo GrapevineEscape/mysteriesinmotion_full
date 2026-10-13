@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds, canSeeShow } from "@/lib/show-access";
 import { acceptOffer, castingEvent, declineOffer } from "@/lib/casting";
 import { isCastingOpen } from "@/lib/show-date-lifecycle";
 
@@ -46,6 +47,8 @@ export async function saveApplication(formData: FormData) {
     include: { rehearsals: { select: { id: true } } },
   });
   if (!showDate || !isCastingOpen(showDate)) redirect("/troupe/casting");
+  const allowed = await allowedShowIds(member);
+  if (!canSeeShow(allowed, showDate.showId)) redirect("/troupe/casting");
 
   const role = await db.role.findFirst({
     where: { id: roleId, showId: showDate.showId },

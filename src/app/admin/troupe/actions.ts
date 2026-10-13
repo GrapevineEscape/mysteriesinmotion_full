@@ -17,11 +17,21 @@ export async function inviteTroupeMember(formData: FormData) {
     throw new Error("An email address is required.");
   }
   const role = formData.get("role") === "ADMIN" ? "ADMIN" : "PERFORMER";
+  const requested = formData.getAll("showId").map(String).filter(Boolean);
+  const shows =
+    role === "PERFORMER" && requested.length
+      ? await db.show.findMany({
+          where: { id: { in: requested } },
+          select: { id: true, title: true },
+          orderBy: { title: "asc" },
+        })
+      : [];
 
   const { invite } = await createTroupeInvite({
     email,
     role,
     createdById: admin.id,
+    showIds: shows.map((show) => show.id),
   });
 
   await sendTroupeInvite({
@@ -29,6 +39,7 @@ export async function inviteTroupeMember(formData: FormData) {
     signInUrl: `${appUrl()}/troupe/sign-in?next=${encodeURIComponent("/troupe")}`,
     expiresAt: invite.expiresAt,
     role: invite.role === "ADMIN" ? "ADMIN" : "PERFORMER",
+    showTitles: shows.map((show) => show.title),
   });
 
   revalidatePath("/admin/troupe");

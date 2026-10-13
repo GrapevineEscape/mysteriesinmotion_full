@@ -4727,6 +4727,38 @@ h3 {
   font-size: 0.75rem;
 }
 
+.invite-shows {
+  margin: 8px 0 22px;
+  padding: 16px 18px 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.invite-shows legend {
+  padding: 0 6px;
+  font-weight: 800;
+}
+
+.invite-shows p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.invite-shows ul {
+  list-style: none;
+  margin: 14px 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.invite-shows li label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 700;
+}
+
 @media (max-width: 760px) {
   .business-heading,
   .report-period {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { troupeInviteOpening } from "@/lib/email";
+import { accessGrantForInvite } from "@/lib/show-access";
 import { escapeNoticeText } from "@/lib/troupe-notices";
 
 describe("troupe invitation", () => {
@@ -13,6 +14,19 @@ describe("troupe invitation", () => {
       troupeInviteOpening("PERFORMER"),
       "You have been invited to join the Mysteries in Motion troupe portal.",
     );
+  });
+});
+
+describe("performer show access", () => {
+  it("limits a performer to the invited shows and leaves an administrator open", () => {
+    assert.deepEqual(accessGrantForInvite("PERFORMER", ["show-a"]), {
+      restricted: true,
+      showIds: ["show-a"],
+    });
+    assert.deepEqual(accessGrantForInvite("ADMIN", ["show-a"]), {
+      restricted: false,
+      showIds: [],
+    });
   });
 });
 

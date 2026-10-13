@@ -115,6 +115,10 @@ model User {
   bio         String?
   headshotUrl String?
 
+  /// When true, this performer only sees the shows in showAccess.
+  /// Existing troupe members stay unrestricted.
+  showAccessRestricted Boolean @default(false)
+
   purchases             Purchase[]
   attempts              CaseAttempt[]
   sessions              Session[]
@@ -124,6 +128,7 @@ model User {
   rehearsalAvailability RehearsalAvailability[]
   directedShowDates     ShowDate[]              @relation("ShowDateDirector")
   invitesSent           TroupeInvite[]          @relation("TroupeInviteCreatedBy")
+  showAccess            PerformerShowAccess[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -168,10 +173,23 @@ model TroupeInvite {
   acceptedAt  DateTime?
   createdById String?
   createdBy   User?     @relation("TroupeInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Shows a performer invite may open. Ignored for administrator invites.
+  showIds     String[]  @default([])
   createdAt   DateTime  @default(now())
 
   @@index([email, expiresAt])
   @@index([expiresAt])
+}
+
+/// Shows a restricted performer is allowed to open.
+model PerformerShowAccess {
+  userId String
+  showId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  show   Show   @relation(fields: [showId], references: [id], onDelete: Cascade)
+
+  @@id([userId, showId])
+  @@index([showId])
 }
 
 /// Catalog entity shared by live and online productions. One row per show we
@@ -207,6 +225,7 @@ model Show {
   roleApplications RoleApplication[]
   showDates        ShowDate[]
   bookings         Booking[]
+  performerAccess  PerformerShowAccess[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

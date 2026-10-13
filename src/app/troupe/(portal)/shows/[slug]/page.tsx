@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds, canSeeShow } from "@/lib/show-access";
 import { SHOW_TYPE_LABELS } from "@/lib/show-types";
 import { RosterInterestButton } from "./roster-interest-button";
 
@@ -32,6 +33,8 @@ export default async function TroupeShowRolesPage({ params }: PageProps) {
     include: { roles: { orderBy: [{ displayOrder: "asc" }, { name: "asc" }] } },
   });
   if (!show) notFound();
+  const allowed = await allowedShowIds(member);
+  if (!canSeeShow(allowed, show.id)) notFound();
 
   const applications = await db.roleApplication.findMany({
     where: { performerId: member.id, showId: show.id },

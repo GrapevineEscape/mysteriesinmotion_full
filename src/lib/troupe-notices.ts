@@ -54,7 +54,13 @@ export async function notifyCastingOpened(showDateId: string) {
 
   const [performers, confirmed] = await Promise.all([
     db.user.findMany({
-      where: { role: "PERFORMER" },
+      where: {
+        role: "PERFORMER",
+        OR: [
+          { showAccessRestricted: false },
+          { showAccess: { some: { showId: showDate.showId } } },
+        ],
+      },
       select: { email: true },
     }),
     db.showDateAssignment.findMany({

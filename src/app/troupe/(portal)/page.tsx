@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireTroupe } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allowedShowIds } from "@/lib/show-access";
 import { formatDate, formatDateTime } from "@/lib/app-time";
 import { PortalTour, StartTourLink } from "@/components/troupe/portal-tour";
 import {
@@ -35,26 +36,32 @@ function profileCompleteness(member: {
 export default async function TroupeDashboardPage() {
   const member = await requireTroupe();
   await applyAutoClose();
+  const allowed = await allowedShowIds(member);
+  const showLimit = allowed ? { showId: { in: allowed } } : {};
 
   const [applications, pendingOffers, openDates, directing] = await Promise.all([
     db.roleApplication.findMany({
-      where: { performerId: member.id },
+      where: { performerId: member.id, ...showLimit },
       include: { show: true, role: true },
       orderBy: { appliedAt: "desc" },
     }),
     db.showDateAssignment.findMany({
-      where: { performerId: member.id, status: "OFFERED" },
+      where: {
+        performerId: member.id,
+        status: "OFFERED",
+        ...(allowed ? { showDate: { showId: { in: allowed } } } : {}),
+      },
       include: { role: true, showDate: { include: { show: true } } },
       orderBy: { showDate: { date: "asc" } },
     }),
     db.showDate.findMany({
-      where: castingOpenWhere(),
+      where: { ...castingOpenWhere(), ...showLimit },
       include: { show: true },
       orderBy: { date: "asc" },
       take: 5,
     }),
     db.showDate.findMany({
-      where: { directorId: member.id, ...upcomingWhere() },
+      where: { directorId: member.id, ...upcomingWhere(), ...showLimit },
       include: { show: true },
       orderBy: { date: "asc" },
       take: 5,
