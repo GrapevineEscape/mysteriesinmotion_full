@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { requireTroupe } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import { currentUser, requireTroupe } from "@/lib/auth";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { displayName } from "@/lib/people";
 
@@ -15,6 +16,11 @@ export const metadata: Metadata = {
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // An unsigned visit should look like a missing page. Staff reach this
+  // area after signing in at /troupe/sign-in.
+  const user = await currentUser();
+  if (!user) notFound();
+
   const member = await requireTroupe("/admin");
 
   return (
