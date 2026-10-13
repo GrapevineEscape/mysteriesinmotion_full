@@ -140,14 +140,22 @@ export async function sendBookingReceipt({
   });
 }
 
+export function troupeInviteOpening(role: "PERFORMER" | "ADMIN") {
+  return role === "ADMIN"
+    ? "You have been invited to join the Mysteries in Motion troupe portal as an Administrator."
+    : "You have been invited to join the Mysteries in Motion troupe portal.";
+}
+
 export async function sendTroupeInvite({
   email,
   signInUrl,
   expiresAt,
+  role = "PERFORMER",
 }: {
   email: string;
   signInUrl: string;
   expiresAt: Date;
+  role?: "PERFORMER" | "ADMIN";
 }) {
   const expires = new Intl.DateTimeFormat("en-US", {
     dateStyle: "long",
@@ -159,7 +167,7 @@ export async function sendTroupeInvite({
     to: email,
     subject: "You have been invited to the Mysteries in Motion troupe",
     html: `
-      <p>You have been invited to join the Mysteries in Motion troupe portal.</p>
+      <p>${troupeInviteOpening(role)}</p>
       <p>There is no password. Enter your email address on the sign-in page and
       we will send you a six-digit code.</p>
       <p><a href="${signInUrl}">${signInUrl}</a></p>

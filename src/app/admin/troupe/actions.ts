@@ -28,6 +28,7 @@ export async function inviteTroupeMember(formData: FormData) {
     email: invite.email,
     signInUrl: `${appUrl()}/troupe/sign-in?next=${encodeURIComponent("/troupe")}`,
     expiresAt: invite.expiresAt,
+    role: invite.role === "ADMIN" ? "ADMIN" : "PERFORMER",
   });
 
   revalidatePath("/admin/troupe");
