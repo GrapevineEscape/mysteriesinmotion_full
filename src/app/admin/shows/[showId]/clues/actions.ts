@@ -32,9 +32,10 @@ export async function createClue(formData: FormData) {
         visibleDuringReveal: formData.get("visibleDuringReveal") === "on",
       },
     }),
-    db.show.update({
-      where: { id: showId },
-      data: { inventoryEnabled: true },
+    db.onlineShowDetail.upsert({
+      where: { showId },
+      update: { inventoryEnabled: true },
+      create: { showId, inventoryEnabled: true },
     }),
   ]);
 
