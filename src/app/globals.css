@@ -28,6 +28,20 @@ body {
   line-height: 1.6;
 }
 
+/* Play door: same company, cooler case-file paper so it is not the host site. */
+html[data-surface="play"] {
+  --paper: #e6eef4;
+  --paper-deep: #d3dde6;
+  --line: rgba(24, 34, 42, 0.14);
+}
+
+html[data-surface="play"] body {
+  background:
+    radial-gradient(circle at 86% 8%, rgba(47, 79, 110, 0.18), transparent 26rem),
+    radial-gradient(circle at 10% 92%, rgba(24, 34, 42, 0.06), transparent 22rem),
+    var(--paper);
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -81,6 +95,47 @@ input {
 .footer-links a.nav-quiet {
   color: var(--muted);
   font-weight: 600;
+}
+
+.nav-product {
+  padding-bottom: 4px;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-product-live {
+  color: var(--red);
+}
+
+.nav-product-broadcast {
+  color: #7a5420;
+}
+
+.nav-product-play {
+  color: #2f4f6e;
+}
+
+.site-nav-desktop a.nav-product-live:hover,
+.site-nav-desktop a.nav-product-live.is-current,
+.site-nav-mobile a.nav-product-live:hover,
+.site-nav-mobile a.nav-product-live.is-current {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+.site-nav-desktop a.nav-product-broadcast:hover,
+.site-nav-desktop a.nav-product-broadcast.is-current,
+.site-nav-mobile a.nav-product-broadcast:hover,
+.site-nav-mobile a.nav-product-broadcast.is-current {
+  color: #7a5420;
+  border-bottom-color: var(--gold);
+}
+
+.site-nav-desktop a.nav-product-play:hover,
+.site-nav-desktop a.nav-product-play.is-current,
+.site-nav-mobile a.nav-product-play:hover,
+.site-nav-mobile a.nav-product-play.is-current {
+  color: #2f4f6e;
+  border-bottom-color: #2f4f6e;
 }
 
 .header-account-link {
@@ -195,6 +250,22 @@ input {
 .hero-compact .hero h1,
 .hero-compact h1 {
   font-size: clamp(2.4rem, 5vw, 4.2rem);
+}
+
+.hero-statement {
+  min-height: 0;
+  grid-template-columns: 1fr;
+  padding-block: 56px 8px;
+}
+
+.hero-statement h1 {
+  max-width: 14em;
+  font-size: clamp(2.5rem, 5vw, 4.15rem);
+}
+
+.hero-statement .text-link {
+  display: inline-block;
+  margin-top: 22px;
 }
 
 .hero-media {
@@ -767,6 +838,207 @@ h3 {
 
 .door-card-play {
   border-top-color: #6b7c8a;
+}
+
+.offer-section,
+.sister-section,
+.finder-section {
+  padding-block: 36px 72px;
+}
+
+.sister-section,
+.finder-section {
+  border-top: 1px solid var(--line);
+}
+
+.offer-section .section-heading h2,
+.sister-section .section-heading h2,
+.finder-section .section-heading h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.offer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.offer-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 26px 24px 24px;
+  background: rgba(255, 255, 255, 0.45);
+  border-top: 4px solid var(--red);
+}
+
+.offer-card h3 {
+  margin: 0 0 12px;
+  font-size: clamp(1.7rem, 2vw, 2.1rem);
+}
+
+.offer-card p {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.offer-card ul {
+  margin: 0 0 22px;
+  padding-left: 18px;
+  color: var(--ink);
+}
+
+.offer-card li + li {
+  margin-top: 4px;
+}
+
+.offer-card .button {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.offer-card-broadcast {
+  border-top-color: var(--gold);
+}
+
+.offer-card-broadcast .eyebrow {
+  color: #7a5420;
+}
+
+.offer-card-broadcast .button-primary {
+  background: #7a5420;
+  box-shadow: none;
+}
+
+.offer-card-broadcast .button-primary:hover {
+  background: #624318;
+}
+
+.offer-card-play {
+  border-top-color: #2f4f6e;
+}
+
+.offer-card-play .eyebrow {
+  color: #2f4f6e;
+}
+
+.offer-card-play .button-primary {
+  background: #2f4f6e;
+  box-shadow: none;
+}
+
+.offer-card-play .button-primary:hover {
+  background: #243e56;
+}
+
+.sister-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.sister-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px 24px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--line);
+}
+
+.sister-card:hover {
+  border-color: var(--ink);
+}
+
+.sister-card .eyebrow {
+  color: var(--ink);
+}
+
+.sister-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.7rem;
+}
+
+.sister-card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.sister-card .text-link {
+  margin-top: auto;
+}
+
+.finder-card {
+  max-width: 720px;
+  padding: 28px 26px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+}
+
+.finder-card h3 {
+  margin-bottom: 18px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.finder-card p {
+  color: var(--muted);
+}
+
+.finder-card .finder-step {
+  margin: 0 0 8px;
+  color: var(--red);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.finder-card .button-row {
+  margin-top: 18px;
+}
+
+.finder-options {
+  display: grid;
+  gap: 10px;
+}
+
+.finder-option {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: white;
+  color: var(--ink);
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.finder-option:hover,
+.finder-option:focus-visible {
+  border-color: var(--ink);
+}
+
+.finder-back {
+  margin-top: 18px;
+  margin-right: 22px;
+  padding: 0 0 2px;
+  border: 0;
+  border-bottom: 2px solid var(--red);
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.finder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.finder-result-button {
+  margin-top: 8px;
 }
 
 .broadcast-preview {
@@ -3435,6 +3707,24 @@ h3 {
     align-items: center;
   }
 
+  .site-nav-mobile a.nav-product {
+    border-left-width: 4px;
+    border-left-style: solid;
+    padding-left: 10px;
+  }
+
+  .site-nav-mobile a.nav-product-live {
+    border-left-color: var(--red);
+  }
+
+  .site-nav-mobile a.nav-product-broadcast {
+    border-left-color: var(--gold);
+  }
+
+  .site-nav-mobile a.nav-product-play {
+    border-left-color: #2f4f6e;
+  }
+
   .header-signin,
   .header-account-link {
     display: none;
@@ -3443,7 +3733,9 @@ h3 {
   .buyer-facts-list,
   .testimonial-grid,
   .mystery-types,
-  .door-grid {
+  .door-grid,
+  .offer-grid,
+  .sister-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3546,6 +3838,14 @@ h3 {
 
   .hero h1 {
     font-size: clamp(3rem, 15vw, 4.4rem);
+  }
+
+  .hero-statement {
+    padding-block: 36px 4px;
+  }
+
+  .hero-statement h1 {
+    font-size: clamp(2.05rem, 9vw, 2.8rem);
   }
 
   .button-row {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Mysteries in Motion",
   },
   description:
-    "Mysteries in Motion brings interactive murder mysteries to your event — live in Dallas–Fort Worth, or online for a large group. You can also play a case at home."
+    "Mysteries in Motion is an interactive mystery company in Dallas–Fort Worth. Hire us to perform at your event, hire us to host your group online, or play a case tonight."
 };
 
 export default async function RootLayout({
@@ -32,7 +32,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html data-surface={surface} lang="en">
       <body>
         <SiteHeader surface={surface} />
         <main>{children}</main>

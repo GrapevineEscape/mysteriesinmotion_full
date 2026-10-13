@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Coming Soon",
@@ -22,10 +21,6 @@ export default function ComingSoonPage() {
           info@mysteriesinmotion.com
         </a>
         .
-      </p>
-      <p>
-        Already part of the troupe?{" "}
-        <Link href="/troupe/sign-in">Sign in to the portal</Link>.
       </p>
     </section>
   );

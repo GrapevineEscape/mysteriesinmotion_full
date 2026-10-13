@@ -1,59 +1,77 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import type { PublicSurface } from "@/lib/surface";
 
 const BRAND = "Mysteries in Motion";
 
+const PRODUCTS = [
+  { href: "/shows", label: "Private shows", kind: "live" },
+  { href: "/broadcast", label: "The Broadcast", kind: "broadcast" },
+  { href: "/mysteries", label: "Play now", kind: "play" },
+] as const;
+
+function productIsCurrent(pathname: string, kind: (typeof PRODUCTS)[number]["kind"]) {
+  if (kind === "live") return pathname === "/shows" || pathname.startsWith("/shows/");
+  if (kind === "broadcast") return pathname === "/broadcast" || pathname.startsWith("/broadcast/");
+  return (
+    pathname === "/mysteries" ||
+    pathname.startsWith("/mysteries/") ||
+    pathname.startsWith("/play/") ||
+    pathname === "/how-it-works" ||
+    pathname === "/my-cases" ||
+    pathname === "/sign-in"
+  );
+}
+
 function NavLinks({
   surface,
+  pathname,
   onNavigate,
 }: {
   surface: PublicSurface;
+  pathname: string;
   onNavigate?: () => void;
 }) {
-  if (surface === "play") {
-    return (
-      <>
-        <Link href="/mysteries" onClick={onNavigate}>
-          Cases
-        </Link>
-        <Link href="/how-it-works" onClick={onNavigate}>
-          How It Works
-        </Link>
-        <Link href="/my-cases" onClick={onNavigate}>
-          My Case Files
-        </Link>
-        <Link className="nav-quiet" href="/" onClick={onNavigate}>
-          Host an event
-        </Link>
-      </>
-    );
-  }
-
   return (
     <>
-      <Link href="/shows" onClick={onNavigate}>
-        Our Shows
-      </Link>
-      <Link href="/broadcast" onClick={onNavigate}>
-        The Broadcast
-      </Link>
-      <Link href="/about" onClick={onNavigate}>
-        About
-      </Link>
-      <Link className="nav-book" href="/book" onClick={onNavigate}>
-        Book
-      </Link>
-      <Link className="nav-quiet" href="/mysteries" onClick={onNavigate}>
-        Play at home
-      </Link>
+      {PRODUCTS.map((product) => (
+        <Link
+          key={product.href}
+          className={`nav-product nav-product-${product.kind}${productIsCurrent(pathname, product.kind) ? " is-current" : ""}`}
+          href={product.href}
+          aria-current={productIsCurrent(pathname, product.kind) ? "page" : undefined}
+          onClick={onNavigate}
+        >
+          {product.label}
+        </Link>
+      ))}
+      {surface === "play" ? (
+        <>
+          <Link href="/how-it-works" onClick={onNavigate}>
+            How it works
+          </Link>
+          <Link href="/my-cases" onClick={onNavigate}>
+            My case files
+          </Link>
+        </>
+      ) : (
+        <Link
+          href="/about"
+          aria-current={pathname === "/about" ? "page" : undefined}
+          onClick={onNavigate}
+        >
+          About
+        </Link>
+      )}
     </>
   );
 }
 
 export function SiteHeader({ surface }: { surface: PublicSurface }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
@@ -65,7 +83,7 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
         <span>{BRAND}</span>
       </Link>
       <nav className="site-nav-desktop" aria-label="Main navigation">
-        <NavLinks surface={surface} />
+        <NavLinks surface={surface} pathname={pathname} />
       </nav>
       <div className="site-header-actions">
         {surface === "play" && (
@@ -93,7 +111,7 @@ export function SiteHeader({ surface }: { surface: PublicSurface }) {
           className="site-nav-mobile"
           aria-label="Mobile navigation"
         >
-          <NavLinks surface={surface} onNavigate={() => setOpen(false)} />
+          <NavLinks surface={surface} pathname={pathname} onNavigate={() => setOpen(false)} />
           {surface === "play" && (
             <Link href="/sign-in" onClick={() => setOpen(false)}>
               Sign In
@@ -118,7 +136,7 @@ export function SiteFooter({ surface }: { surface: PublicSurface }) {
         <p>
           {surface === "play"
             ? "A case to crack. A choice to make. A truth to uncover."
-            : "We bring interactive mysteries to your event."}
+            : "An interactive mystery company in Dallas–Fort Worth."}
         </p>
         <p className="footer-contact">
           <a href="mailto:info@mysteriesinmotion.com">
@@ -129,21 +147,20 @@ export function SiteFooter({ surface }: { surface: PublicSurface }) {
       <div className="footer-links">
         {surface === "play" ? (
           <>
-            <Link href="/mysteries">Cases</Link>
-            <Link href="/how-it-works">How It Works</Link>
-            <Link href="/">Host an event</Link>
+            <Link href="/mysteries">Play now</Link>
+            <Link href="/how-it-works">How it works</Link>
+            <Link href="/my-cases">My case files</Link>
+            <Link href="/shows">Private shows</Link>
+            <Link href="/broadcast">The Broadcast</Link>
             <Link href="/sign-in">Sign In</Link>
           </>
         ) : (
           <>
-            <Link href="/shows">Our Shows</Link>
+            <Link href="/shows">Private shows</Link>
             <Link href="/broadcast">The Broadcast</Link>
+            <Link href="/mysteries">Play now</Link>
             <Link href="/about">About</Link>
             <Link href="/book">Book</Link>
-            <Link href="/mysteries">Play at home</Link>
-            <Link className="nav-quiet" href="/troupe/sign-in">
-              Cast & staff
-            </Link>
           </>
         )}
         <Link href="/privacy">Privacy</Link>
