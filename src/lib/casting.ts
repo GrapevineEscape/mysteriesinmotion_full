@@ -10,6 +10,7 @@ import {
   type CastingDecision,
 } from "@/lib/casting-rules";
 import { nextCastStatus } from "@/lib/show-date-lifecycle";
+import { notifyRoleOffered, notifySeatConfirmed } from "@/lib/troupe-notices";
 
 type Client = Prisma.TransactionClient | typeof db;
 
@@ -124,6 +125,9 @@ export async function offerSeat(
       ok: true,
       message: `Offered ${role!.name}. The performer still needs to accept.`,
     };
+  }).then(async (result) => {
+    if (result.ok) await notifyRoleOffered(showDateId, roleId, performerId);
+    return result;
   });
 }
 
@@ -194,10 +198,18 @@ async function respondToOffer(
 
     return {
       ok: true,
+      notified: accept,
+      showDateId,
+      roleId,
       message: accept
         ? `You are confirmed as ${role.name}.`
         : `You declined ${role.name}. The seat is open again.`,
     };
+  }).then(async (result) => {
+    if (result.ok && result.notified) {
+      await notifySeatConfirmed(result.showDateId, result.roleId, performerId);
+    }
+    return result;
   });
 }
 

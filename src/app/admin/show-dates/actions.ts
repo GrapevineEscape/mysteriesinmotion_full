@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { ShowDateStatus } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth";
 import { castingEvent, syncCastStatus } from "@/lib/casting";
+import { notifyCastingOpened, notifySeatConfirmed } from "@/lib/troupe-notices";
 import { db } from "@/lib/db";
 import { parseLocalDateTime } from "@/lib/app-time";
 import { defaultTechDate } from "@/lib/rehearsal-schedule";
@@ -114,6 +115,14 @@ export async function saveWizardCast(
     seats.push({ roleId: role.id, performerId });
   }
 
+  const previous = await db.showDateAssignment.findMany({
+    where: { showDateId: showDate.id, status: "CONFIRMED" },
+    select: { roleId: true, performerId: true },
+  });
+  const alreadyConfirmed = new Set(
+    previous.map((seat) => `${seat.roleId}:${seat.performerId}`),
+  );
+
   await db.$transaction(async (tx) => {
     await tx.showDateAssignment.deleteMany({ where: { showDateId: showDate.id } });
     if (seats.length) {
@@ -130,6 +139,8 @@ export async function saveWizardCast(
 
   for (const seat of seats) {
     castingEvent("wizard_precast", { showDateId: showDate.id, ...seat });
+    if (alreadyConfirmed.has(`${seat.roleId}:${seat.performerId}`)) continue;
+    await notifySeatConfirmed(showDate.id, seat.roleId, seat.performerId);
   }
 
   if (warnings.length) return { errors: warnings };
@@ -216,6 +227,7 @@ export async function publishShowDate(formData: FormData) {
   });
 
   castingEvent("casting_opened", { showDateId: showDate.id });
+  await notifyCastingOpened(showDate.id);
   revalidatePath("/admin/show-dates");
   redirect(`/admin/casting/${showDate.id}`);
 }
@@ -276,6 +288,7 @@ export async function updateShowDate(
 
   if (status === "OPEN" && existing.status !== "OPEN") {
     castingEvent("casting_opened", { showDateId: existing.id });
+    await notifyCastingOpened(existing.id);
   }
 
   revalidatePath("/admin/show-dates");
