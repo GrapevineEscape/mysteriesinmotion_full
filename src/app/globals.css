@@ -1885,7 +1885,7 @@ h3 {
   font-weight: 800;
 }
 
-.clue-editor-grid input:not([type="file"]),
+.clue-editor-grid input:not([type="file"]):not([type="checkbox"]),
 .clue-editor-grid select,
 .clue-editor-grid textarea {
   width: 100%;
@@ -1898,8 +1898,24 @@ h3 {
 
 .clue-editor-grid small {
   display: block;
+  margin-top: 6px;
   color: var(--muted);
   font-size: 0.68rem;
+}
+
+.clue-editor-grid label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.clue-editor-grid input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .upload-field > div {

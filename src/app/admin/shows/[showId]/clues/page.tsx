@@ -86,14 +86,18 @@ export default async function ClueAdminPage({
             <label><span>Unlock time</span><input defaultValue={clueBeingEdited ? timecode(clueBeingEdited.unlockAtSeconds) : "00:00:00"} name="timecode" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" required /></label>
             <label className="wide-field"><span>Description (optional)</span><textarea defaultValue={clueBeingEdited?.description ?? ""} name="description" rows={3} /></label>
             <label><span>Clue file reference</span><input defaultValue={clueBeingEdited?.fileUrl ?? ""} name="fileUrl" placeholder="r2://bucket/path/file.jpg or HTTPS URL" /></label>
-            <label><span>Briefcase icon reference</span><input defaultValue={clueBeingEdited?.iconUrl ?? ""} name="iconUrl" placeholder="r2://bucket/path/icon.jpg or HTTPS URL" /></label>
+            <label>
+              <span>Briefcase icon reference</span>
+              <input defaultValue={clueBeingEdited?.iconUrl ?? ""} name="iconUrl" placeholder="r2://bucket/path/icon.jpg or HTTPS URL" />
+              <small>Shown at 131×73 pixels. Upload at least 262×146 so it stays sharp.</small>
+            </label>
             <label><input defaultChecked={clueBeingEdited?.visibleDuringReveal ?? true} name="visibleDuringReveal" type="checkbox" /> Available during Act Two</label>
           </div>
           <p>
             Private R2 files use <code>r2://bucket/object-key</code>, such as{" "}
             <code>r2://online-mystery-images/clues/file.jpg</code>. HTTPS URLs
-            also remain supported. Keep the clue file and its square briefcase
-            icon as separate references.
+            also remain supported. Keep the clue file and the briefcase icon as
+            separate references. The icon fills a 131×73 thumbnail.
           </p>
           <div className="clue-editor-actions">
             {clueBeingEdited && (
