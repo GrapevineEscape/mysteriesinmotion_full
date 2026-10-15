@@ -598,7 +598,8 @@ model EvidenceItem {
   unlockStage         EvidenceUnlockStage @default(ACT_ONE)
   unlockAtSeconds     Int
   displayOrder        Int                 @default(0)
-  visibleDuringReveal Boolean             @default(true)
+  visibleDuringReveal       Boolean             @default(true)
+  visibleDuringIntermission Boolean             @default(true)
   unlocks             EvidenceUnlock[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt

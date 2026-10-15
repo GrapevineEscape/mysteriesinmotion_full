@@ -47,6 +47,7 @@ export default async function PlayCasePage({
         iconUrl: await secureR2Reference(clue.iconUrl),
         unlockStage: clue.unlockStage,
         unlockAtSeconds: clue.unlockAtSeconds,
+        visibleDuringIntermission: clue.visibleDuringIntermission,
         visibleDuringReveal: clue.visibleDuringReveal,
       })),
     ),

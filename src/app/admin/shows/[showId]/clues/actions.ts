@@ -35,6 +35,8 @@ export async function createClue(formData: FormData) {
         unlockAtSeconds: parseTimecode(String(formData.get("timecode") ?? "")),
         displayOrder: count,
         visibleDuringReveal: formData.get("visibleDuringReveal") === "on",
+        visibleDuringIntermission:
+          formData.get("visibleDuringIntermission") === "on",
       },
     }),
     db.onlineShowDetail.upsert({
@@ -66,6 +68,8 @@ export async function updateClue(formData: FormData) {
       unlockStage: unlockStage(formData.get("unlockStage")),
       unlockAtSeconds: parseTimecode(String(formData.get("timecode") ?? "")),
       visibleDuringReveal: formData.get("visibleDuringReveal") === "on",
+      visibleDuringIntermission:
+        formData.get("visibleDuringIntermission") === "on",
     },
   });
 

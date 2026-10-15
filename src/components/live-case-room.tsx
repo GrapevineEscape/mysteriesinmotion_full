@@ -32,6 +32,7 @@ type LiveEvidence = {
   title: string;
   unlockAtSeconds: number;
   unlockStage: "ACT_ONE" | "ACT_TWO" | "INTERMISSION";
+  visibleDuringIntermission: boolean;
   visibleDuringReveal: boolean;
 };
 
@@ -282,8 +283,21 @@ export function LiveCaseRoom({
           ? "ACT_TWO"
           : null;
   const unlockedEvidence = useMemo(
-    () => show.evidence.filter((clue) => unlockedIds.has(clue.id)),
-    [show.evidence, unlockedIds],
+    () =>
+      show.evidence.filter((clue) => {
+        if (!unlockedIds.has(clue.id)) return false;
+        if (stage === "intermission") {
+          return (
+            clue.unlockStage === "INTERMISSION" ||
+            clue.visibleDuringIntermission
+          );
+        }
+        if (stage === "act-two" || stage === "situation-room") {
+          return clue.unlockStage === "ACT_TWO" || clue.visibleDuringReveal;
+        }
+        return clue.unlockStage === "ACT_ONE";
+      }),
+    [show.evidence, stage, unlockedIds],
   );
 
   const saveProgress = useCallback(

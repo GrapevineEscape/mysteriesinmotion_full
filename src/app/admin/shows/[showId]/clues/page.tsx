@@ -108,14 +108,9 @@ export default async function ClueAdminPage({
               <input defaultValue={clueBeingEdited?.iconUrl ?? ""} name="iconUrl" placeholder="r2://bucket/path/icon.jpg or HTTPS URL" />
               <small>Shown at 131×73 pixels. Upload at least 262×146 so it stays sharp.</small>
             </label>
+            <label><input defaultChecked={clueBeingEdited?.visibleDuringIntermission ?? true} name="visibleDuringIntermission" type="checkbox" /> Available during Intermission</label>
             <label><input defaultChecked={clueBeingEdited?.visibleDuringReveal ?? true} name="visibleDuringReveal" type="checkbox" /> Available during Act Two</label>
           </div>
-          <p>
-            Private R2 files use <code>r2://bucket/object-key</code>, such as{" "}
-            <code>r2://online-mystery-images/clues/file.jpg</code>. HTTPS URLs
-            also remain supported. Keep the clue file and the briefcase icon as
-            separate references. The icon fills a 131×73 thumbnail.
-          </p>
           <div className="clue-editor-actions">
             {clueBeingEdited && (
               <Link
