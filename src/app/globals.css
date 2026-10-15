@@ -2991,6 +2991,16 @@ h3 {
   box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.6);
 }
 
+.intermission-link-editor h3 {
+  margin-bottom: 8px;
+}
+
+.intermission-link-editor > .question-editor-grid {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
 .intermission-links {
   position: absolute;
   left: 18px;

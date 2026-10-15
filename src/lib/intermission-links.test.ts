@@ -8,13 +8,15 @@ import {
 describe("intermission links", () => {
   it("keeps three http pages and drops a blank or unsafe row", () => {
     const form = new FormData();
-    form.set("linkLabel1", "FocusTec news");
-    form.set("linkUrl1", "https://example.com/news");
-    form.set("linkNote1", "Look for the missing executive");
-    form.set("linkLabel2", "Skip me");
-    form.set("linkUrl2", "javascript:alert(1)");
-    form.set("linkLabel3", "");
-    form.set("linkUrl3", "");
+    form.append("linkLabel", "FocusTec news");
+    form.append("linkUrl", "https://example.com/news");
+    form.append("linkNote", "Look for the missing executive");
+    form.append("linkLabel", "Skip me");
+    form.append("linkUrl", "javascript:alert(1)");
+    form.append("linkNote", "");
+    form.append("linkLabel", "");
+    form.append("linkUrl", "");
+    form.append("linkNote", "");
 
     assert.deepEqual(intermissionLinksFromForm(form), [
       {

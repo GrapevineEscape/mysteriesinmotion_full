@@ -4,16 +4,7 @@ export type IntermissionLink = {
   note: string;
 };
 
-const EMPTY_LINKS: IntermissionLink[] = [
-  { label: "", url: "", note: "" },
-  { label: "", url: "", note: "" },
-  { label: "", url: "", note: "" },
-];
-
-export function intermissionLinkSlots(value: unknown): IntermissionLink[] {
-  const saved = parseIntermissionLinks(value);
-  return EMPTY_LINKS.map((slot, index) => saved[index] ?? slot);
-}
+export const MAX_INTERMISSION_LINKS = 5;
 
 export function parseIntermissionLinks(value: unknown): IntermissionLink[] {
   if (!Array.isArray(value)) return [];
@@ -26,26 +17,28 @@ export function parseIntermissionLinks(value: unknown): IntermissionLink[] {
     const note = typeof record.note === "string" ? record.note.trim() : "";
     if (!label || !isHttpUrl(url)) continue;
     links.push({ label, url, note });
-    if (links.length === 3) break;
+    if (links.length === MAX_INTERMISSION_LINKS) break;
   }
   return links;
 }
 
 export function intermissionLinksFromForm(formData: FormData): IntermissionLink[] {
+  const labels = formData.getAll("linkLabel");
+  const urls = formData.getAll("linkUrl");
+  const notes = formData.getAll("linkNote");
   const links: IntermissionLink[] = [];
-  for (let index = 1; index <= 3; index += 1) {
-    const label = field(formData, `linkLabel${index}`);
-    const url = field(formData, `linkUrl${index}`);
-    const note = field(formData, `linkNote${index}`);
-    if (!label && !url && !note) continue;
+  const count = Math.min(labels.length, urls.length, MAX_INTERMISSION_LINKS);
+  for (let index = 0; index < count; index += 1) {
+    const label = text(labels[index]);
+    const url = text(urls[index]);
+    const note = text(notes[index]);
     if (!label || !isHttpUrl(url)) continue;
     links.push({ label, url, note });
   }
   return links;
 }
 
-function field(formData: FormData, key: string) {
-  const value = formData.get(key);
+function text(value: FormDataEntryValue | undefined) {
   return typeof value === "string" ? value.trim() : "";
 }
 
