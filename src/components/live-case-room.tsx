@@ -160,23 +160,43 @@ function formatTime(totalSeconds: number) {
 }
 
 function IntermissionPages({ links }: { links: IntermissionLink[] }) {
+  const [open, setOpen] = useState<IntermissionLink | null>(null);
   if (!links.length) return null;
   return (
-    <div className="intermission-links">
-      <p className="eyebrow">Pages to review</p>
-      <ul>
+    <>
+      <div className="blotter-papers">
+        <p className="eyebrow">On the desk</p>
         {links.map((link) => (
-          <li key={link.url}>
-            <a href={link.url} rel="noreferrer" target="_blank">
-              {link.label}
-              <span aria-hidden="true"> ↗</span>
-            </a>
+          <button
+            className="blotter-paper"
+            key={`${link.label}-${link.url}`}
+            type="button"
+            onClick={() => setOpen(link)}
+          >
+            <strong>{link.label}</strong>
             {link.note ? <small>{link.note}</small> : null}
-          </li>
+          </button>
         ))}
-      </ul>
-      <p>Each page opens in a new tab. The timer keeps running.</p>
-    </div>
+      </div>
+      {open && (
+        <div className="desk-sheet" role="dialog" aria-label={open.label}>
+          <header>
+            <button type="button" onClick={() => setOpen(null)}>
+              Back to the desk
+            </button>
+            <strong>{open.label}</strong>
+            <a href={open.url} rel="noreferrer" target="_blank">
+              Open in a new tab
+            </a>
+          </header>
+          <iframe src={open.url} title={open.label} />
+          <p>
+            If this page stays blank, the site will not sit inside the desk.
+            Use “Open in a new tab.” The timer keeps running either way.
+          </p>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -863,7 +883,7 @@ export function LiveCaseRoom({
               />
             ) : (
               <div
-                className="intermission-media"
+                className="intermission-media blotter-heading"
                 style={
                   show.intermissionMediaType === "IMAGE" &&
                   show.intermissionImageUrl
@@ -873,9 +893,8 @@ export function LiveCaseRoom({
                     : undefined
                 }
               >
-                <p className="eyebrow">Intermission</p>
-                <h1>{show.intermissionTitle}</h1>
-                <p>Review your notes and evidence before submitting.</p>
+                <p className="eyebrow">The desk</p>
+                <h2>{show.intermissionTitle}</h2>
               </div>
             )}
             <IntermissionPages links={show.intermissionLinks} />
