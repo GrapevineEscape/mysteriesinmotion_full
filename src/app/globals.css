@@ -2553,8 +2553,9 @@ h3 {
   position: relative;
   z-index: 0;
   width: 100%;
-  height: 100%;
-  min-height: 55vh;
+  height: 28vh;
+  min-height: 0;
+  flex: 0 0 auto;
   border: 0;
 }
 
@@ -2966,8 +2967,9 @@ h3 {
 
 .stage-intermission .intermission-pane,
 .stage-intermission .accusation-pane {
-  height: auto;
+  height: 100%;
   min-height: 0;
+  overflow: auto;
 }
 
 .intermission-pane {
@@ -3037,48 +3039,71 @@ h3 {
   color: #5b656b;
 }
 
-.desk-sheet {
+.blotter-paper span {
+  color: #2f4f6e;
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  word-break: break-all;
+}
+
+.desk-browser {
   position: absolute;
   inset: 16px;
   z-index: 8;
   display: flex;
   flex-direction: column;
-  background: #f4f0e7;
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+  padding: 10px;
+  background: #c5c1b4;
+  border: 2px solid #6d685c;
+  box-shadow:
+    inset 1px 1px 0 #eeeae0,
+    0 22px 60px rgba(0, 0, 0, 0.45);
 }
 
-.desk-sheet header {
+.desk-browser-chrome {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 8px;
   align-items: center;
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(24, 34, 42, 0.16);
+  margin-bottom: 8px;
 }
 
-.desk-sheet header button,
-.desk-sheet header a {
+.desk-browser-chrome button,
+.desk-browser-chrome a {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  color: #18222a;
+  background: #e7e2d4;
+  border: 1px solid #6d685c;
   font-weight: 800;
+  font-size: 0.82rem;
 }
 
-.desk-sheet header strong {
+.desk-browser-address {
   flex: 1;
-  font-family: Georgia, "Times New Roman", serif;
+  min-width: 0;
+  padding: 6px 10px;
+  overflow: hidden;
+  color: #18222a;
+  background: white;
+  border: 1px solid #6d685c;
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.desk-sheet iframe {
+.desk-browser iframe {
   flex: 1;
   width: 100%;
   min-height: 0;
-  border: 0;
+  border: 2px solid #6d685c;
   background: white;
 }
 
-.desk-sheet > p {
-  margin: 0;
-  padding: 8px 14px 10px;
-  color: #5b656b;
-  font-size: 0.82rem;
+.desk-browser > p {
+  margin: 8px 0 0;
+  color: #3c3830;
+  font-size: 0.78rem;
 }
 
 .projector-light {

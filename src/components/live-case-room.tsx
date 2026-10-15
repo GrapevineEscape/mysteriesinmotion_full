@@ -174,25 +174,26 @@ function IntermissionPages({ links }: { links: IntermissionLink[] }) {
             onClick={() => setOpen(link)}
           >
             <strong>{link.label}</strong>
+            <span>{link.url}</span>
             {link.note ? <small>{link.note}</small> : null}
           </button>
         ))}
       </div>
       {open && (
-        <div className="desk-sheet" role="dialog" aria-label={open.label}>
-          <header>
+        <div className="desk-browser" role="dialog" aria-label={open.label}>
+          <div className="desk-browser-chrome">
             <button type="button" onClick={() => setOpen(null)}>
-              Back to the desk
+              ← Desk
             </button>
-            <strong>{open.label}</strong>
+            <div className="desk-browser-address">{open.url}</div>
             <a href={open.url} rel="noreferrer" target="_blank">
-              Open in a new tab
+              New tab
             </a>
-          </header>
+          </div>
           <iframe src={open.url} title={open.label} />
           <p>
-            If this page stays blank, the site will not sit inside the desk.
-            Use “Open in a new tab.” The timer keeps running either way.
+            Instagram, YouTube, and some other sites refuse to appear inside
+            this window. Use New tab for those. The timer keeps running.
           </p>
         </div>
       )}
