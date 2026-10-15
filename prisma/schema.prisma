@@ -93,6 +93,7 @@ enum TimerExpirationAction {
 enum EvidenceUnlockStage {
   ACT_ONE
   ACT_TWO
+  INTERMISSION
 }
 
 enum AnswerMatchMode {
@@ -256,6 +257,8 @@ model OnlineShowDetail {
   intermissionVideoId    String?
   intermissionImageUrl   String?
   intermissionVideoLoops Boolean               @default(true)
+  /// Up to three { label, url, note } pages detectives may open during intermission.
+  intermissionLinks      Json                  @default("[]")
 
   accusationTimed       Boolean               @default(false)
   accusationSeconds     Int?

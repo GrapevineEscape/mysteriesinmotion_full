@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { intermissionLinksFromForm } from "@/lib/intermission-links";
 import {
   evaluateShowReadiness,
   showReadinessInclude,
@@ -55,6 +56,7 @@ export async function updateShowConfiguration(formData: FormData) {
     intermissionVideoId: text(formData, "intermissionVideoId"),
     intermissionImageUrl: text(formData, "intermissionImageUrl"),
     intermissionVideoLoops: checked(formData, "intermissionVideoLoops"),
+    intermissionLinks: intermissionLinksFromForm(formData),
     accusationTimed: checked(formData, "accusationTimed"),
     accusationSeconds: positiveInteger(formData, "accusationSeconds"),
     timerWarningSeconds: positiveInteger(formData, "timerWarningSeconds"),

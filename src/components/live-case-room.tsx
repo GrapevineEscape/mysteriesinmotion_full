@@ -11,6 +11,7 @@ import type {
   PlayProgressResponse,
   PlayStage,
 } from "@/lib/play-progress-types";
+import type { IntermissionLink } from "@/lib/intermission-links";
 import type { SituationResult } from "@/lib/situation-room-types";
 
 type LiveStage =
@@ -30,7 +31,7 @@ type LiveEvidence = {
   id: string;
   title: string;
   unlockAtSeconds: number;
-  unlockStage: "ACT_ONE" | "ACT_TWO";
+  unlockStage: "ACT_ONE" | "ACT_TWO" | "INTERMISSION";
   visibleDuringReveal: boolean;
 };
 
@@ -54,6 +55,7 @@ export type LiveShowConfiguration = {
   timerWarningSeconds: number | null;
   evidence: LiveEvidence[];
   intermissionImageUrl: string | null;
+  intermissionLinks: IntermissionLink[];
   intermissionMediaType: "NONE" | "VIDEO" | "IMAGE";
   intermissionTitle: string;
   intermissionVideoId: string | null;
@@ -155,6 +157,27 @@ function formatTime(totalSeconds: number) {
   const minutes = Math.floor(safeSeconds / 60);
   const seconds = Math.floor(safeSeconds % 60);
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function IntermissionPages({ links }: { links: IntermissionLink[] }) {
+  if (!links.length) return null;
+  return (
+    <div className="intermission-links">
+      <p className="eyebrow">Pages to review</p>
+      <ul>
+        {links.map((link) => (
+          <li key={link.url}>
+            <a href={link.url} rel="noreferrer" target="_blank">
+              {link.label}
+              <span aria-hidden="true"> ↗</span>
+            </a>
+            {link.note ? <small>{link.note}</small> : null}
+          </li>
+        ))}
+      </ul>
+      <p>Each page opens in a new tab. The timer keeps running.</p>
+    </div>
+  );
 }
 
 export function LiveCaseRoom({
@@ -502,12 +525,22 @@ export function LiveCaseRoom({
 
   useEffect(() => {
     if (stage !== "intermission") return;
+    setUnlockedIds((current) => {
+      const next = new Set(current);
+      show.evidence
+        .filter(
+          (clue) =>
+            clue.unlockStage === "INTERMISSION" && clue.unlockAtSeconds === 0,
+        )
+        .forEach((clue) => next.add(clue.id));
+      return next;
+    });
     void saveProgress({
       stage: "INTERMISSION",
       enterIntermission: true,
       draftAnswers: answersRef.current,
     });
-  }, [saveProgress, stage]);
+  }, [saveProgress, show.evidence, stage]);
 
   useEffect(() => {
     if (stage !== "intermission") return;
@@ -845,6 +878,7 @@ export function LiveCaseRoom({
                 <p>Review your notes and evidence before submitting.</p>
               </div>
             )}
+            <IntermissionPages links={show.intermissionLinks} />
           </div>
           <div className="accusation-pane">
             <p className="eyebrow">Final decision</p>

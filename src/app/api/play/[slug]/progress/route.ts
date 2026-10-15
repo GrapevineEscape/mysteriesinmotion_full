@@ -384,12 +384,23 @@ export async function PATCH(
       update.furthestActOneSeconds ?? saved.furthestActOneSeconds;
     const actTwoSeconds =
       update.furthestActTwoSeconds ?? saved.furthestActTwoSeconds;
+    const intermissionElapsed = saved.intermissionStartedAt
+      ? Math.max(
+          0,
+          Math.floor(
+            (now.getTime() - saved.intermissionStartedAt.getTime()) / 1000,
+          ),
+        )
+      : null;
     const eligibleEvidence = show.evidenceItems.filter(
       (item) =>
         (item.unlockStage === "ACT_ONE" &&
           item.unlockAtSeconds <= actOneSeconds) ||
         (item.unlockStage === "ACT_TWO" &&
-          item.unlockAtSeconds <= actTwoSeconds),
+          item.unlockAtSeconds <= actTwoSeconds) ||
+        (item.unlockStage === "INTERMISSION" &&
+          intermissionElapsed !== null &&
+          item.unlockAtSeconds <= intermissionElapsed),
     );
     for (const item of eligibleEvidence) {
       await transaction.evidenceUnlock.upsert({

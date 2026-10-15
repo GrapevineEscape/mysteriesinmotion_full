@@ -8,6 +8,7 @@ import {
   evaluateShowReadiness,
   showReadinessInclude,
 } from "@/lib/show-readiness";
+import { intermissionLinkSlots } from "@/lib/intermission-links";
 import { updateShowConfiguration } from "./actions";
 
 export const metadata: Metadata = { title: "Configure Show" };
@@ -30,6 +31,7 @@ export default async function AdminShowPage({
   if (!show?.online) notFound();
   const online = show.online;
   const readiness = evaluateShowReadiness(show);
+  const linkSlots = intermissionLinkSlots(online.intermissionLinks);
 
   return (
     <section className="page-shell admin-shell">
@@ -124,6 +126,32 @@ export default async function AdminShowPage({
           <label><span>Warning seconds</span><input defaultValue={online.timerWarningSeconds ?? ""} min="1" name="timerWarningSeconds" type="number" /></label>
           <label><span>When time expires</span><select defaultValue={online.timerExpirationAction} name="timerExpirationAction"><option value="SUBMIT_CURRENT">Submit current answers</option><option value="MARK_UNANSWERED_INCORRECT">Mark unanswered incorrect</option></select></label>
         </div>
+        <h3>Pages detectives may open</h3>
+        <p>
+          Each address opens in a new tab during intermission. The accusation
+          form and the timer stay on this page. Leave a row blank if you need
+          fewer than three.
+        </p>
+        {linkSlots.map((link, index) => (
+          <div className="question-editor-grid" key={index}>
+            <label>
+              <span>Page {index + 1} label</span>
+              <input defaultValue={link.label} name={`linkLabel${index + 1}`} />
+            </label>
+            <label>
+              <span>Address</span>
+              <input
+                defaultValue={link.url}
+                name={`linkUrl${index + 1}`}
+                placeholder="https://"
+              />
+            </label>
+            <label className="wide-field">
+              <span>What they should look for</span>
+              <input defaultValue={link.note} name={`linkNote${index + 1}`} />
+            </label>
+          </div>
+        ))}
 
         <h2>Act Two &amp; Situation Room</h2>
         <div className="question-editor-grid">

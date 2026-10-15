@@ -7,6 +7,7 @@ import { requireCaseAccess } from "@/lib/access";
 import { getSubmittedSituationResult } from "@/lib/attempt-result";
 import { secureR2Reference } from "@/lib/cloudflare-r2";
 import { secureStreamReference } from "@/lib/cloudflare-stream";
+import { parseIntermissionLinks } from "@/lib/intermission-links";
 import type { DraftAnswers, PlayStage } from "@/lib/play-progress-types";
 
 export const metadata: Metadata = { title: "Case Room" };
@@ -69,6 +70,7 @@ export default async function PlayCasePage({
     accusationSeconds: online.accusationSeconds,
     timerWarningSeconds: online.timerWarningSeconds,
     timerExpirationAction: online.timerExpirationAction,
+    intermissionLinks: parseIntermissionLinks(online.intermissionLinks),
     intermissionTitle: online.intermissionTitle,
     intermissionMediaType: online.intermissionMediaType,
     intermissionVideoId,

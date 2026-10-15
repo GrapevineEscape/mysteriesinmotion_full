@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+function unlockStage(value: FormDataEntryValue | null) {
+  if (value === "ACT_TWO") return "ACT_TWO" as const;
+  if (value === "INTERMISSION") return "INTERMISSION" as const;
+  return "ACT_ONE" as const;
+}
+
 function parseTimecode(value: string) {
   const match = /^(\d{2}):([0-5]\d):([0-5]\d)$/.exec(value);
   if (!match) throw new Error("Time code must use HH:MM:SS.");
@@ -25,8 +31,7 @@ export async function createClue(formData: FormData) {
         description: String(formData.get("description") ?? "").trim() || null,
         fileUrl: String(formData.get("fileUrl") ?? "").trim() || null,
         iconUrl: String(formData.get("iconUrl") ?? "").trim() || null,
-        unlockStage:
-          formData.get("unlockStage") === "ACT_TWO" ? "ACT_TWO" : "ACT_ONE",
+        unlockStage: unlockStage(formData.get("unlockStage")),
         unlockAtSeconds: parseTimecode(String(formData.get("timecode") ?? "")),
         displayOrder: count,
         visibleDuringReveal: formData.get("visibleDuringReveal") === "on",
@@ -58,8 +63,7 @@ export async function updateClue(formData: FormData) {
       description: String(formData.get("description") ?? "").trim() || null,
       fileUrl: String(formData.get("fileUrl") ?? "").trim() || null,
       iconUrl: String(formData.get("iconUrl") ?? "").trim() || null,
-      unlockStage:
-        formData.get("unlockStage") === "ACT_TWO" ? "ACT_TWO" : "ACT_ONE",
+      unlockStage: unlockStage(formData.get("unlockStage")),
       unlockAtSeconds: parseTimecode(String(formData.get("timecode") ?? "")),
       visibleDuringReveal: formData.get("visibleDuringReveal") === "on",
     },

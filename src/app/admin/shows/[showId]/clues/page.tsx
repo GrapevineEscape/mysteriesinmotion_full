@@ -5,6 +5,12 @@ import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { createClue, updateClue } from "./actions";
 
+function stageLabel(stage: string) {
+  if (stage === "INTERMISSION") return "Intermission";
+  if (stage === "ACT_TWO") return "Act 2";
+  return "Act 1";
+}
+
 function timecode(seconds: number) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -53,7 +59,7 @@ export default async function ClueAdminPage({
                 <div>
                   <h3>{clue.title}</h3>
                   {clue.description && <p>{clue.description}</p>}
-                  <span>{clue.unlockStage === "ACT_ONE" ? "Act 1" : "Act 2"} · {timecode(clue.unlockAtSeconds)}</span>
+                  <span>{stageLabel(clue.unlockStage)} · {timecode(clue.unlockAtSeconds)}</span>
                 </div>
                 <Link
                   aria-label={`Edit ${clue.title}`}
@@ -82,8 +88,19 @@ export default async function ClueAdminPage({
           <h2>{clueBeingEdited ? `Edit ${clueBeingEdited.title}` : "Add a clue"}</h2>
           <div className="clue-editor-grid">
             <label><span>Displayed name</span><input defaultValue={clueBeingEdited?.title ?? ""} name="title" required /></label>
-            <label><span>Act</span><select defaultValue={clueBeingEdited?.unlockStage ?? "ACT_ONE"} name="unlockStage"><option value="ACT_ONE">Act 1</option><option value="ACT_TWO">Act 2</option></select></label>
-            <label><span>Unlock time</span><input defaultValue={clueBeingEdited ? timecode(clueBeingEdited.unlockAtSeconds) : "00:00:00"} name="timecode" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" required /></label>
+            <label>
+              <span>When it unlocks</span>
+              <select defaultValue={clueBeingEdited?.unlockStage ?? "ACT_ONE"} name="unlockStage">
+                <option value="ACT_ONE">Act 1</option>
+                <option value="INTERMISSION">Intermission</option>
+                <option value="ACT_TWO">Act 2</option>
+              </select>
+            </label>
+            <label>
+              <span>Unlock time</span>
+              <input defaultValue={clueBeingEdited ? timecode(clueBeingEdited.unlockAtSeconds) : "00:00:00"} name="timecode" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" required />
+              <small>For Intermission, 00:00:00 means as soon as the decision begins.</small>
+            </label>
             <label className="wide-field"><span>Description (optional)</span><textarea defaultValue={clueBeingEdited?.description ?? ""} name="description" rows={3} /></label>
             <label><span>Clue file reference</span><input defaultValue={clueBeingEdited?.fileUrl ?? ""} name="fileUrl" placeholder="r2://bucket/path/file.jpg or HTTPS URL" /></label>
             <label>
