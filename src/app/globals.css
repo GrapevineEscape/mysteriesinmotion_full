@@ -3199,6 +3199,7 @@ h3 {
 .accusation-pane form {
   display: grid;
   gap: 13px;
+  padding-bottom: 96px;
 }
 
 .accusation-timer {
