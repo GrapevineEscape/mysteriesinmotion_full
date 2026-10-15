@@ -295,9 +295,11 @@ export function LiveCaseRoom({
       show.evidence.filter((clue) => {
         if (!unlockedIds.has(clue.id)) return false;
         if (stage === "intermission") {
+          if (clue.unlockStage === "INTERMISSION") {
+            return clue.unlockAtSeconds === 0 || unlockedIds.has(clue.id);
+          }
           return (
-            clue.unlockStage === "INTERMISSION" ||
-            clue.visibleDuringIntermission
+            clue.unlockStage === "ACT_ONE" && clue.visibleDuringIntermission
           );
         }
         if (stage === "act-two" || stage === "situation-room") {
@@ -573,7 +575,9 @@ export function LiveCaseRoom({
       show.evidence
         .filter(
           (clue) =>
-            clue.unlockStage === "INTERMISSION" && clue.unlockAtSeconds === 0,
+            (clue.unlockStage === "INTERMISSION" &&
+              clue.unlockAtSeconds === 0) ||
+            (clue.unlockStage === "ACT_ONE" && clue.visibleDuringIntermission),
         )
         .forEach((clue) => next.add(clue.id));
       return next;

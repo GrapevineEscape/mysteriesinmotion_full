@@ -395,7 +395,8 @@ export async function PATCH(
     const eligibleEvidence = show.evidenceItems.filter(
       (item) =>
         (item.unlockStage === "ACT_ONE" &&
-          item.unlockAtSeconds <= actOneSeconds) ||
+          (item.unlockAtSeconds <= actOneSeconds ||
+            (item.visibleDuringIntermission && intermissionElapsed !== null))) ||
         (item.unlockStage === "ACT_TWO" &&
           item.unlockAtSeconds <= actTwoSeconds) ||
         (item.unlockStage === "INTERMISSION" &&
