@@ -3092,12 +3092,23 @@ h3 {
   text-overflow: ellipsis;
 }
 
-.desk-browser iframe {
+.desk-browser iframe,
+.desk-browser-page {
   flex: 1;
   width: 100%;
   min-height: 0;
   border: 2px solid #6d685c;
   background: white;
+}
+
+.desk-browser-page {
+  overflow: auto;
+}
+
+.desk-browser-page img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .desk-browser > p {

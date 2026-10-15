@@ -71,7 +71,12 @@ export default async function PlayCasePage({
     accusationSeconds: online.accusationSeconds,
     timerWarningSeconds: online.timerWarningSeconds,
     timerExpirationAction: online.timerExpirationAction,
-    intermissionLinks: parseIntermissionLinks(online.intermissionLinks),
+    intermissionLinks: await Promise.all(
+      parseIntermissionLinks(online.intermissionLinks).map(async (link) => ({
+        ...link,
+        pictureUrl: (await secureR2Reference(link.pictureUrl)) ?? "",
+      })),
+    ),
     intermissionTitle: online.intermissionTitle,
     intermissionMediaType: online.intermissionMediaType,
     intermissionVideoId,

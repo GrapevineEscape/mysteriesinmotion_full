@@ -191,11 +191,19 @@ function IntermissionPages({ links }: { links: IntermissionLink[] }) {
               New tab
             </a>
           </div>
-          <iframe src={open.url} title={open.label} />
-          <p>
-            Instagram, YouTube, and some other sites refuse to appear inside
-            this window. Use New tab for those. The timer keeps running.
-          </p>
+          {open.pictureUrl ? (
+            <div className="desk-browser-page">
+              <img alt={open.label} src={open.pictureUrl} />
+            </div>
+          ) : (
+            <iframe src={open.url} title={open.label} />
+          )}
+          {!open.pictureUrl && (
+            <p>
+              If this page stays blank, that site will not appear inside the
+              desk. Use New tab. The timer keeps running.
+            </p>
+          )}
         </div>
       )}
     </>

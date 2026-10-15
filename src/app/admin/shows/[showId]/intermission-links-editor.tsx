@@ -25,9 +25,10 @@ export function IntermissionLinksEditor({
     <div className="intermission-link-editor">
       <h3>Pages detectives may open</h3>
       <p>
-        Start with none. Add a page when you have one, up to five. Each address
-        opens in a new tab during intermission. The note is the line under that
-        button, telling them what to look for. The timer keeps running.
+        Start with none. Add a page when you have one, up to five. Address is
+        what the detective sees in the browser bar. Leave Picture empty for a
+        live page such as a YouTube embed. For a site that will not appear
+        inside the desk, paste the screenshot address in Picture.
       </p>
       {links.map((link, index) => (
         <div className="question-editor-grid" key={index}>
@@ -57,6 +58,15 @@ export function IntermissionLinksEditor({
               onChange={(event) => update(index, "note", event.target.value)}
             />
           </label>
+          <label className="wide-field">
+            <span>Picture</span>
+            <input
+              name="linkPicture"
+              placeholder="https://… or r2://bucket/path/screenshot.jpg"
+              value={link.pictureUrl}
+              onChange={(event) => update(index, "pictureUrl", event.target.value)}
+            />
+          </label>
           <button
             className="button button-small button-ghost"
             type="button"
@@ -73,7 +83,10 @@ export function IntermissionLinksEditor({
           className="button button-small button-ghost"
           type="button"
           onClick={() =>
-            setLinks((current) => [...current, { label: "", url: "", note: "" }])
+            setLinks((current) => [
+              ...current,
+              { label: "", url: "", note: "", pictureUrl: "" },
+            ])
           }
         >
           Add a page
